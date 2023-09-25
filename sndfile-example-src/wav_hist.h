@@ -12,7 +12,7 @@
 class WAVHist {
   private:
 	std::vector<std::map<short, size_t>> counts;
-	std::map<short, size_t> mid;				 // histograma com a média dos valores em counts. Não é vector porque mid só tem 1 canal
+	std::map<short, size_t> mid;				
 	std::map<short, size_t> side;
 
   public:
@@ -28,30 +28,34 @@ class WAVHist {
 
 
 //	Atualiza o histograma mid de acordo com os valores em counts.
-	void update_mid() {
-		if (counts.size() == 1) {
-			mid = counts[0];
-		} else {
-			short sum;
-			for (short i = SHRT_MIN; i <= SHRT_MAX; i++) {
-				sum = 0;
-				for (short c = 0; c < counts.size(); c++) {
-					sum += counts[c][i];
-				}
-				mid[i] = sum/counts.size();
+	void update_mid(const std::vector<short>& samples) {
+		short freq = 0;
+		short c = 0;
+		for (auto s : samples) {
+			freq += s;
+			if (c++ % counts.size() == 0) {
+				mid[freq/counts.size()]++;
+				freq = 0;
 			}
-
-		}		
-
+		}
 	}
 
-	void update_side() {
-		if (counts.size() != 2) {
+	void update_side(const std::vector<short>& samples) {
+		if (counts.size() != 2)
 			std::cout << "Error in update_side: function requires two channels" + '\n';
-		} else {
-			for (short i = SHRT_MIN; i <= SHRT_MAX; i++) {
-				side[i] = counts[0][i] - counts[1][i];
-				
+
+		short freq = 0;
+		short c = 0;
+		for (auto s : samples) {
+			if (c++ == 0) {
+				freq = s;
+			} else {
+				if (freq >= s) {
+					side[(freq-s)/2]++;
+				} else {
+					side[(s-freq)/2]++;
+				}
+				c = 0;
 			}
 		}
 	}
