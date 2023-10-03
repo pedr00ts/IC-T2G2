@@ -38,7 +38,7 @@ class WAVHist {
 
 	// Atualiza o histograma mid.
 	void update_mid(const std::vector<short>& samples) {
-		short freq = 0;
+		int32_t freq = 0;
 		short c = 0;
 		for (auto s : samples) {
 			freq += s;
