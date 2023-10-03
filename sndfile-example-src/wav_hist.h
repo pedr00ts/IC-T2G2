@@ -20,23 +20,20 @@ class WAVHist {
 	std::map<short, size_t> mid;				
 	std::map<short, size_t> side;
 	Type type;
+	int binSize;
 
   public:
-	WAVHist(const SndfileHandle& sfh) {
-		counts.resize(sfh.channels());
-		type = Type::CHANNELS;
-	}
-
-	WAVHist(const SndfileHandle& sfh, const Type aType) {
+	WAVHist(const SndfileHandle& sfh, const Type aType, const int k) {
 		counts.resize(sfh.channels());
 		type = aType;
+		binSize = std::pow(2, k);
 	}
 
 	// Atualiza o histograma counts.
 	void update_counts(const std::vector<short>& samples) {
 		size_t n { };
 		for(auto s : samples)
-			counts[n++ % counts.size()][s]++;
+			counts[n++ % counts.size()][s/binSize]++;
 	}
 
 	// Atualiza o histograma mid.
@@ -94,7 +91,7 @@ class WAVHist {
 	void dump_counts(const int channel) const {
 
 		for(auto [value, counter] : counts[channel])
-			std::cout << value << '\t' << counter << '\n';
+			std::cout << value * binSize << '\t' << counter << '\n';
 	}
 
 	// Escreve no stdout os valores atuais de mid. 

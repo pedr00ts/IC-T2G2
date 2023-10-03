@@ -10,14 +10,14 @@ constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 void usage(char *argv[]) {
 	cerr << "Usage: " << argv[0] << " <input file> <option>\n";
 	cerr << "	List of available options:\n";
-	cerr << "	-c <channel>  for desired channel\n";
+	cerr << "	-c <channel> [k]  for desired channel and optional constant k for bins with 2^k values\n";
 	cerr << "	-m            for MID\n";
 	cerr << "	-s            for SIDE\n";
 }
 
 int main(int argc, char *argv[]) {
 
-	if(argc < 3 || argc > 4) {
+	if(argc < 3 || argc > 5) {
 		cerr << "Error: wrong number of args\n";
 		usage(argv);
 		return 1;
@@ -43,18 +43,27 @@ int main(int argc, char *argv[]) {
 	string option { argv[2] };
 
 	WAVHist::Type type { };
-	int channel { };
+	int channel, k { };
 	if (option == "-c") {
-		if (argc != 4) {
-			cerr << "Error: missing desired channel number\n";
+		if (argc < 4) {
+			cerr << "Error: missing desired channel\n";
 			usage(argv);
 			return 1;
 		}
 
-		channel = stoi(argv[argc-1]);
+		channel = stoi(argv[3]);
 		if(channel >= sndFile.channels()) {
 			cerr << "Error: invalid channel requested\n";
 			return 1;
+		}
+
+		k = 0;
+		if (argc == 5) {
+			k = stoi(argv[4]);
+			if(k < 0 || k > 16) {
+				cerr << "Error: invalid constant k requested\n";
+				return 1;
+			}
 		}
 
 		type = WAVHist::Type::CHANNELS;
@@ -71,7 +80,7 @@ int main(int argc, char *argv[]) {
 
 	size_t nFrames;
 	vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
-	WAVHist hist { sndFile, type };
+	WAVHist hist { sndFile, type, k };
 	while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
 		hist.update(samples);
