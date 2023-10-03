@@ -8,18 +8,19 @@ using namespace std;
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
 void usage(char *argv[]) {
-	cerr << "Usage: " << argv[0] << " <input file> <sampleSize> <channel>\n";
+	cerr << "Usage: " << argv[0] << " <input file> <sampleSize> <output file> <newSampleSize>\n";
 }
 
 int main(int argc, char *argv[]) {
 
-	if(argc != 4) {
+	if(argc != 5) {
 		cerr << "Error: wrong number of args\n";
 		usage(argv);
 		return 1;
 	}
 
 	SndfileHandle sndFile { argv[1] };
+	SndfileHandle sndFileOut = SndfileHandle(argv[3], SFM_WRITE, sndFile.format(), sndFile.channels(), sndFile.samplerate());
 	if(sndFile.error()) {
 		cerr << "Error: invalid input file\n";
 		return 1;
@@ -35,23 +36,24 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	size_t channel = stoi(argv[3]);
-    if(channel >= sndFile.channels()) {
-		cerr << "Error: invalid channel requested\n";
-		return 1;
-	}
+	size_t sampleSize = stoi(argv[2]);
+	size_t newSampleSize = stoi(argv[4]);
 
-    size_t outSampleSize = stoi(argv[2]);
+	if (newSampleSize < 1 || newSampleSize > sampleSize || sampleSize < 1 ) {
+            std::cerr << "Error: desired sample size is invalid";
+            return 1;
+    }
+
     size_t nFrames;
 	vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
-	WAVQuant quantfile { sndFile, 16 };
+	
+	WAVQuant quantfile { sampleSize, newSampleSize };
 
     while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
-		quantfile.update(samples, outSampleSize);
+		cout << quantfile.quant(samples).data();
+		sndFileOut.writef(quantfile.quant(samples).data(), nFrames*sndFile.channels());
 	}
-    
-    quantfile.dump(channel);
     
     return 0;
 }
