@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	size_t sampleSize = stoi(argv[2]);
-	size_t newSampleSize = stoi(argv[4]);
+	short sampleSize = stoi(argv[2]);
+	short newSampleSize = stoi(argv[4]);
 
 	if (newSampleSize < 1 || newSampleSize > sampleSize || sampleSize < 1 ) {
             std::cerr << "Error: desired sample size is invalid";
@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
 
     while((nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE))) {
 		samples.resize(nFrames * sndFile.channels());
-		cout << quantfile.quant(samples).data();
-		sndFileOut.writef(quantfile.quant(samples).data(), nFrames*sndFile.channels());
+		cout << quantfile.quant(samples).data()[0];
+		sndFileOut.writef(quantfile.quant(samples).data(), nFrames);
 	}
     
     return 0;
-}
+}	
