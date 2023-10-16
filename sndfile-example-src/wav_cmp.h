@@ -20,42 +20,56 @@ class WavCmp {
 
     public:
 
+    size_t channels() {
+        return nChannels;
+    }
 
-    WavCmp(SndfileHandle& fileA, SndfileHandle& fileB) {
-        if (fileA.channels() != fileA.channels()) {
+    bool validChannel(short channel) {
+        return 0 <= channel < nChannels;
+    }
+
+
+    WavCmp(SndfileHandle& edited, SndfileHandle& original) {
+        if (edited.channels() != original.channels()) {
             cerr << "Error - provided files have incompatible number of channels\n";
             return;
         }
-        nChannels = fileA.channels();
+        nChannels = original.channels();
 
-        // Read all frames from fileA to samplesA
-        size_t nFrames {} ;       
-        do {
-            samplesA.reserve(fileA.channels() * FRAMES_BUFFER_SIZE);
-        } while((nFrames = fileA.readf((short*)samplesA.back(), FRAMES_BUFFER_SIZE)));
+        // debug
+        // cout << "nChannels: " << nChannels << "\n";
 
-        // Read all frames from fileB to samplesB
-        nFrames = 0;
-        do {
-            samplesB.reserve(fileB.channels() * FRAMES_BUFFER_SIZE);
-        } while((nFrames = fileB.readf((short*)samplesB.back(), FRAMES_BUFFER_SIZE))); // nframes > 0 --> loop
+        // Read all frames from files to samples
+        size_t i { 0 };   
+        // original file -> samplesA
+        samplesA = vector<short>(original.frames());    
+        while(original.readf(&samplesA[i++], FRAMES_BUFFER_SIZE));
+        i = 0;  // reset index
+        // edited file -> samplesB
+        samplesB = vector<short>(edited.frames());    
+        while(edited.readf(&samplesB[i++], FRAMES_BUFFER_SIZE));
 
         if (samplesA.size() != samplesB.size()) {
             cerr << "Error - provided files have incompatible amount of samples\n";
             return;
         }
 
+        // debug
+        // cout << "SamplesA size: " << samplesA.size() << "\n";
+        // cout << "SamplesB size: " << samplesB.size() << "\n";
+        // for(int i=0; i<10; i++) {
+        //     cout << "[" << i << "]: " << samplesA[i] << " " << samplesB[i] << "\n";
+        // }
+
     }
-
-    //
-
-
 
     // return meanSquaredError between samplesA and samplesB for specified channel
     double meanSquaredError (short channel) {
+        if(!validChannel(channel))
+            throw(channel);
+            
         double res { };
         size_t i = channel;
-        
         while (i < samplesA.size()) {
             res += pow(abs(samplesA[i] - samplesB[i]), 2);
             i += nChannels;
@@ -87,6 +101,9 @@ class WavCmp {
 
 
     double maxAbsoluteError(short channel) {
+        if(!validChannel(channel))
+            throw(channel);
+
         double max {};
         
         size_t i = channel;
@@ -123,6 +140,9 @@ class WavCmp {
 
 
     double SNR (short channel) {
+        if(!validChannel(channel))
+            throw(channel);
+
         size_t S {};
 
         for (size_t i = channel; i < samplesA.size(); i+=nChannels) {
