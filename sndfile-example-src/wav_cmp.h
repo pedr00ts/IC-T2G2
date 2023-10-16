@@ -38,7 +38,7 @@ class WavCmp {
         nFrames = 0;
         do {
             samplesB.reserve(fileB.channels() * FRAMES_BUFFER_SIZE);
-        } while((nFrames = fileA.readf((short*)samplesA.back(), FRAMES_BUFFER_SIZE))); // nframes > 0 --> loop
+        } while((nFrames = fileB.readf((short*)samplesB.back(), FRAMES_BUFFER_SIZE))); // nframes > 0 --> loop
 
         if (samplesA.size() != samplesB.size()) {
             cerr << "Error - provided files have incompatible amount of samples\n";
@@ -57,11 +57,11 @@ class WavCmp {
         size_t i = channel;
         
         while (i < samplesA.size()) {
-            res += abs(pow(samplesA[i], 2) - pow(samplesB[i], 2));
+            res += pow(abs(samplesA[i] - samplesB[i]), 2);
             i += nChannels;
         }
         
-        return res/nChannels;
+        return res/(samplesA.size()/nChannels);
     }
 
     // return meanSquaredError between samplesA and samplesB for average of channels
@@ -70,19 +70,85 @@ class WavCmp {
         double sumA { };
         double sumB { };
          
-        for (size_t i = 0; i < samplesA.size(); i = (i+1) % nChannels) {
-            sumA += samplesA[i];
-            sumB += samplesB[i];
+        for (size_t i = 1; i <= samplesA.size(); i++) {
+            sumA += samplesA[i-1];
+            sumB += samplesB[i-1];
 
             // i == nChannels-1 -> calculate MSE between A and B samples and reset sums  
-            if (i == (nChannels - 1)) {
-                res += abs(pow((sumA/nChannels), 2) - pow((sumA/nChannels), 2));
+            if (i % (nChannels) == 0) {
+                res += pow(abs((sumA/nChannels)-(sumB/nChannels)), 2);
                 sumA = 0;
                 sumB = 0;
             }
         }
 
         return res/(samplesA.size()/nChannels); // size / nChannels == nElements ()
+    }
+
+
+    double maxAbsoluteError(short channel) {
+        double max {};
+        
+        size_t i = channel;
+        
+        while (i < samplesA.size()) {
+            if ((abs(samplesA[i] - samplesB[i])) > max)
+                max = (abs(samplesA[i] - samplesB[i]));
+            i += nChannels;
+        }
+
+        return max;
+    }
+
+
+    double maxAbsoluteErrorAvg () {
+        double max { };
+        double sumA { };
+        double sumB { };
+         
+        for (size_t i = 1; i <= samplesA.size(); i++) {
+            sumA += samplesA[i-1];
+            sumB += samplesB[i-1];
+
+            if (i % (nChannels) == 0) {
+                if ((abs(sumA/nChannels - sumB/nChannels)) > max)
+                    max = (abs(sumA/nChannels - sumB/nChannels));
+                sumA = 0;
+                sumB = 0;
+            }
+        }
+
+        return max; // size / nChannels == nElements ()
+    }
+
+
+    double SNR (short channel) {
+        size_t S {};
+
+        for (size_t i = channel; i < samplesA.size(); i+=nChannels) {
+            S += pow(samplesA[i], 2);
+        }
+
+        S /= (samplesA.size() / nChannels); 
+        return S/meanSquaredError(channel);
+    }
+
+
+    double SNR_Avg () {
+        double S { };
+        double sumA { };
+         
+        for (size_t i = 1; i <= samplesA.size(); i++) {
+            sumA += samplesA[i-1];
+
+            if (i % (nChannels) == 0) {
+                S += pow(sumA/nChannels, 2);
+                sumA = 0;
+            }
+        }
+        S /= (samplesA.size()/nChannels);
+
+        return S/meanSquaredErrorAvg(); // size / nChannels == nElements ()
     }
 
 
