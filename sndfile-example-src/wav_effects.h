@@ -31,7 +31,7 @@ class Wav_Delay: public Wav_Effect {
                 if (i < delayInSamples) {
                     out[i] = in[i];
                 } else {
-                    out[i] = in[i] + in[i - delayInSamples];
+                    out[i] = in[i];
                 }
             }
 
@@ -52,7 +52,7 @@ class Wav_Echo: public Wav_Effect {
         }
 
         vector<short> apply(vector<short>& in) {
-            int delayInSamples = (int) (delay / sampleRate);
+            int delayInSamples = delay*sampleRate;
             vector<short> out(in.size() + delayInSamples);
 
             for (int i=0; i < out.size(); i++) {

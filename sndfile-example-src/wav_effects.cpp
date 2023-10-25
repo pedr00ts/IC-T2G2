@@ -13,12 +13,12 @@ void usage(char *argv[]) {
 }
 
 enum EFFECT {
-     e, E, A   
+     e = 'e', E = 'E', A = 'A'   
 };
 
 int main(int argc, char *argv[]) {
 
-    if(argc != 5) {
+    if(argc != 6) {
             cerr << "Error: wrong number of args\n";
             usage(argv);
             return 1;
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
 
     SndfileHandle sndFile { argv[1] };
-	SndfileHandle sndFileOut = SndfileHandle(argc-1, SFM_WRITE, sndFile.format(), sndFile.channels(), sndFile.samplerate());
+	SndfileHandle sndFileOut = SndfileHandle(argv[argc-1], SFM_WRITE, sndFile.format(), sndFile.channels(), sndFile.samplerate());
 	if(sndFile.error()) {
 		cerr << "Error: invalid input file\n";
 		return 1;
@@ -47,8 +47,10 @@ int main(int argc, char *argv[]) {
     size_t i = 0;
     while(sndFile.readf(&samples.data()[i++], FRAMES_BUFFER_SIZE)); // read all samples
 
-        switch(argv[2][1]) {
-        case EFFECT::e:
+    vector<short> samplesOut;
+    switch(argv[2][1]) {
+    case e:
+        {
             float delay = stof(argv[3]);
             float decay = stof(argv[4]);
             if (delay < 0 || delay > 20000) {
@@ -56,14 +58,23 @@ int main(int argc, char *argv[]) {
                 usage(argv);
                 return 1;
             }
+        
             if (decay < 0 | decay >= 1) {
                 cerr << "Error: invalid decay value: " << decay << "\n";
                 usage(argv);
                 return 1;
             }
 
-            break;
-        case EFFECT::E:
+            Wav_Echo echo = Wav_Echo{sndFile.samplerate(), delay, decay};
+            cout << "echo criado \n";
+            samplesOut = echo.apply(samples); 
+            cout << samples.size() << '\n';
+            cout << samplesOut.size() << '\n';
+            sndFileOut.writef(samplesOut.data(), samplesOut.size());
+            return 0;
+        }
+    case 'E':
+        {
             float delay = stof(argv[3]);
             float decay = stof(argv[4]);
             if (delay < 0 || delay > 20000) {
@@ -72,21 +83,21 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
 
-            
+
             if (decay < 0 | decay >= 1) {
                 cerr << "Error: invalid decay value: " << decay << "\n";
                 usage(argv);
                 return 1;
             }
             break;
-        case EFFECT::A:
+        }
+    case 'A':
 
-            break;
-        default:
-            usage(argv);
-            return 1;
+        break;
+    default:
+        usage(argv);
+        return 1;
     }
-
     
 
     
