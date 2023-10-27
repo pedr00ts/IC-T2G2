@@ -6,6 +6,8 @@ using namespace std;
 
 class BitStream {
     private:
+//        ifstream fileIn;
+//        ofstream fileOut;
 
         // convert variable in bits to corresponding value in bytes.
         // NOT TESTED
@@ -33,10 +35,19 @@ class BitStream {
 
         }
 
-        bool readBit(ifstream& fileIn, int pos) {
+//        void setFileIn(ifstream& inputStream){
+//            fileIn = inputStream;
+//        }
+
+        // reads bit at position pos from the stream
+        // requires correct position in the stream
+        bool readBit(fstream& fileIn, size_t pos) {
+
+            // read final byte from the stream
             char byte;
             fileIn.get(byte);
-            //cout << "byte: " << byte << '\n';
+            
+            // return the requested bit
             switch(pos) {
                 case 0:
                     return byte & bit0;
@@ -57,14 +68,33 @@ class BitStream {
                 default:
                     return 0;
             }
+            
             cerr << "Error in readBit\n";
             return 1;
         }
 
-        // writes bit to byte at the end of file, in position pos
-        // pos < 0 --> 
-        void writeBit(ifstream& fileIn, bool bit, bool pos) {
+        // writes bit to byte at the end of file, in position pos 
+        void writeBit(fstream& fileIn, char bit, size_t pos) {
+            char* byte = new char[1];
+
+            // read final byte
+            fileIn.seekg(-1, fileIn.end);
+            fileIn.get(byte[0]);
+
+            cout << "Original byte: " << byte[0] << '\n';
             
+            // write requested change 
+            byte[0] = byte[0] & (bit << (7-pos)); 
+            cout << "Modified byte: " << byte[0] << '\n';
+            fileIn.seekp(fileIn.tellg()-1);
+            fileIn.write(byte, 1);
+        }
+
+        // reads byte from provided stream
+        char readByte(ifstream& fileIn) {
+            char byte;
+            fileIn.get(byte);
+            return byte;
         }
 
 

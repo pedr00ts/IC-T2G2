@@ -6,12 +6,20 @@ int main(int argc, char *argv[]) {
 
     BitStream f{};
     
-    ifstream readFile("chars.txt");
+    fstream readFile("chars.txt");
+    fstream writeFile("chars.txt");
 
+    //test writeBit
+    f.writeBit(writeFile, 1, 0);
+    f.writeBit(writeFile, 1, 5);
+    writeFile.close();
+    
+
+    // test readBit
     readFile.seekg(0, readFile.end);
-    int charcount = readFile.tellg() - 1;
+    size_t charcount = readFile.tellg();
     readFile.seekg(0, readFile.beg);
-    cout << charcount << '\n';
+    cout << "charcount: " << charcount << '\n';
 
     for (int i = 0; i < charcount; i++) {
         cout << readFile.peek() << ": ";
@@ -21,6 +29,8 @@ int main(int argc, char *argv[]) {
         }
         cout << '\n';
     }
+
+    
 
     return 0;
 }
