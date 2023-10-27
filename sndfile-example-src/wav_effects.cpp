@@ -64,7 +64,8 @@ int main(int argc, char *argv[]) {
                 usage(argv);
                 return 1;
             }
-
+            cout << delay << '\n';
+            cout << decay << '\n';
             Wav_Echo echo = Wav_Echo{sndFile.samplerate(), delay, decay};
             cout << "echo criado \n";
             samplesOut = echo.apply(samples); 
