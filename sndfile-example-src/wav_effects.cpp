@@ -9,12 +9,37 @@ using namespace std;
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
 void usage(char *argv[]) {
-	cerr << "Usage: " << argv[0] << " <input file> <[-e][-E][-A]> <opt1> <opt2>  <output file>\n";
+	cerr << "Usage: " << argv[0] << " <input file> <[-e][-d][-A]> <opt1> <opt2>  <output file>\n";
 }
 
 enum EFFECT {
-     e = 'e', E = 'E', A = 'A'   
+     e = 'e', d = 'd', A = 'A'   
 };
+
+vector<vector<short>> separate(const vector<short>& samples, int channels) {
+    vector<vector<short>> sep(channels, vector<short>());
+    
+    cout << channels;
+    for(int i=0; i < samples.size(); i++) {
+        sep[i%channels].push_back(samples[i]);
+    }
+
+    return sep;
+}
+
+vector<short> join(const vector<vector<short>>& sep) {
+    int channels = sep.size();
+    int frames = sep[0].size();
+    vector<short> samples(channels * frames);
+
+    for(int i=0; i < samples.size(); i++) {
+        for(int c=0; c<channels; c++) {
+            samples[i] = sep[c][(int)(i/channels)];
+        }
+    }
+
+    return samples;
+}
 
 int main(int argc, char *argv[]) {
 
@@ -43,9 +68,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	vector<short> samples(sndFile.frames());
-    size_t i = 0;
-    while(sndFile.readf(&samples.data()[i++], FRAMES_BUFFER_SIZE)); // read all samples
+	vector<short> samples(sndFile.frames() * sndFile.channels());
+    sndFile.readf(samples.data(), sndFile.frames()); // read all samples
 
     vector<short> samplesOut;
     switch(argv[2][1]) {
@@ -66,31 +90,47 @@ int main(int argc, char *argv[]) {
             }
             cout << delay << '\n';
             cout << decay << '\n';
+
             Wav_Echo echo = Wav_Echo{sndFile.samplerate(), delay, decay};
             cout << "echo criado \n";
-            samplesOut = echo.apply(samples); 
+            
+            vector<vector<short>> channelsIn = separate(samples, sndFile.channels());
+            vector<vector<short>> channelsOut(channelsIn.size());
+            for(int i=0; i<channelsIn.size(); i++) {
+                channelsOut[i] = echo.apply(channelsIn[i]); 
+            }
+            samplesOut = join(channelsOut);
+
             cout << samples.size() << '\n';
             cout << samplesOut.size() << '\n';
-            sndFileOut.writef(samplesOut.data(), samplesOut.size());
+
+            sndFileOut.writef(samplesOut.data(), samplesOut.size()/sndFile.channels());
             return 0;
         }
-    case 'E':
+    case d:
         {
             float delay = stof(argv[3]);
-            float decay = stof(argv[4]);
             if (delay < 0 || delay > 20000) {
                 cerr << "Error: invalid delay value: " << delay << "\n";
                 usage(argv);
                 return 1;
             }
 
-
-            if (decay < 0 | decay >= 1) {
-                cerr << "Error: invalid decay value: " << decay << "\n";
-                usage(argv);
-                return 1;
+            Wav_Delay delayEffect = Wav_Delay{sndFile.samplerate(), delay};
+            cout << "delay criado \n";
+            
+            vector<vector<short>> channelsIn = separate(samples, sndFile.channels());
+            vector<vector<short>> channelsOut(channelsIn.size());
+            for(int i=0; i<channelsIn.size(); i++) {
+                channelsOut[i] = delayEffect.apply(channelsIn[i]); 
             }
-            break;
+            samplesOut = join(channelsOut);
+
+            cout << samples.size() << '\n';
+            cout << samplesOut.size() << '\n';
+
+            sndFileOut.writef(samplesOut.data(), samplesOut.size()/sndFile.channels());
+            return 0;
         }
     case 'A':
 

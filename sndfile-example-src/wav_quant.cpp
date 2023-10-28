@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
             return 1;
     }
 
-    size_t nFrames;
+  size_t nFrames;
 	vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
 	
 	WAVQuant quantfile { sampleSize, newSampleSize };

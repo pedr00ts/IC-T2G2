@@ -15,25 +15,27 @@ class Wav_Effect {
 class Wav_Delay: public Wav_Effect {
     private:
         float delay;
-        int feedback;
+        float mix;
 
     public:
-        Wav_Delay (float delay, int feedback) {
+        Wav_Delay (int sampleRate, float delay) {
             Wav_Delay::delay = delay;
-            Wav_Delay::feedback = feedback;
+            mix = 0.4;
         }
 
         vector<short> apply(vector<short>& in) {
-            int delayInSamples = (int) (delay / sampleRate);
+            int delayInSamples = (int) delay*sampleRate;
             vector<short> out(in.size() + delayInSamples);
 
+            int effect;
             for (int i=0; i < out.size(); i++) {
                 if (i < delayInSamples) {
                     out[i] = in[i];
                 } else {
-                    out[i] = in[i];
+                    out[i] = (1-mix) * in[i] + mix * in[i - delayInSamples];
                 }
             }
+            delayInSamples += delayInSamples;
 
             return out;
         }
@@ -43,25 +45,29 @@ class Wav_Echo: public Wav_Effect {
     private:
         float delay;
         float decay;
+        float mix;
 
     public:
         Wav_Echo (int sampleRate, float delay, float decay) {
             Wav_Effect::sampleRate = sampleRate;
             Wav_Echo::delay = delay;
             Wav_Echo::decay = decay;
+            mix = 0.4;
         }
 
         vector<short> apply(vector<short>& in) {
-            int delayInSamples = delay*sampleRate;
+            int delayInSamples = (int) delay*sampleRate;
             vector<short> out(in.size() + delayInSamples);
 
+            int effect;
             for (int i=0; i < out.size(); i++) {
                 if (i < delayInSamples) {
                     out[i] = in[i];
                 } else {
-                    out[i] = in[i] + in[i - delayInSamples] * decay;
+                    out[i] = (1-mix) * in[i] + mix * out[i - delayInSamples] * decay;
                 }
             }
+            delayInSamples += delayInSamples;
 
             return out;
         }
