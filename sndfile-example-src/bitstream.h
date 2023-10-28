@@ -74,7 +74,7 @@ class BitStream {
         }
 
         // writes bit to byte at the end of file, in position pos 
-        void writeBit(fstream& fileIn, char bit, size_t pos) {
+        void writeBit(fstream& fileIn, bool bit, size_t pos) {
             char* byte = new char[1];
 
             // read final byte
@@ -83,9 +83,17 @@ class BitStream {
 
             cout << "Original byte: " << byte[0] << '\n';
             
-            // write requested change 
-            byte[0] = byte[0] & (bit << (7-pos)); 
-            cout << "Modified byte: " << byte[0] << '\n';
+            // modify byte
+            if (bit) {
+                byte[0] = (0b10000000 >> pos) | byte[0];  
+                cout << "Modified byte: " << byte[0] << '\n';
+            } else {
+                //cout << "bitwise operator: " << (0xF7>>pos) << '\n'; 
+                byte[0] = (0b0111111101111111 >> pos) & byte[0]; 
+                cout << "Modified byte: " << byte[0] << '\n';
+            }
+
+            // write to file
             fileIn.seekp(fileIn.tellg()-1);
             fileIn.write(byte, 1);
         }

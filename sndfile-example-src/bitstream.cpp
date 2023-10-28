@@ -2,33 +2,36 @@
 
 using namespace std;
 
+// USED FOR TESTING EX. 5
+
 int main(int argc, char *argv[]) {
 
     BitStream f{};
     
-    fstream readFile("chars.txt");
-    fstream writeFile("chars.txt");
+    fstream file("chars.txt");
 
     //test writeBit
-    f.writeBit(writeFile, 1, 0);
-    f.writeBit(writeFile, 1, 5);
-    writeFile.close();
-    
+    f.writeBit(file, 1, 0);
+    f.writeBit(file, 1, 5);
+    f.writeBit(file, 0, 1);
+    f.writeBit(file, 0, 7);    
 
     // test readBit
-    readFile.seekg(0, readFile.end);
-    size_t charcount = readFile.tellg();
-    readFile.seekg(0, readFile.beg);
+    file.seekg(0, file.end);
+    size_t charcount = file.tellg();
+    file.seekg(0, file.beg);
     cout << "charcount: " << charcount << '\n';
 
     for (int i = 0; i < charcount; i++) {
-        cout << readFile.peek() << ": ";
+        cout << file.peek() << ": ";
         for (int j = 0; j < 8; j++) {
-            readFile.seekg(i, readFile.beg);
-            cout << f.readBit(readFile, j);
+            file.seekg(i, file.beg);
+            cout << f.readBit(file, j);
         }
         cout << '\n';
     }
+
+    file.close();
 
     
 
