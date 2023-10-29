@@ -34,3 +34,6 @@ target_link_libraries (bitstream)
 
 add_executable (encoder-decoder encoder-decoder.cpp)
 target_link_libraries (bitstream)
+
+add_executable (codec codec.cpp)
+target_link_libraries (codec sndfile)

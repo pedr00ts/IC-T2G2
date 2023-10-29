@@ -8,15 +8,6 @@ using namespace std;
 class BitStream {
     private:
 
-        // convert variable in bits to corresponding value in bytes.
-        // NOT TESTED
-        size_t byteFormat(size_t bits) {
-            if (bits % 8 == 0) 
-                return bits;
-            else 
-                return (0 << bits/8) & bits;
-        }
-
     public:
 
         BitStream() {
@@ -34,15 +25,15 @@ class BitStream {
             bit7 = 0b00000001,
         };
 
-        // reads bit at position pos from the stream
-        // requires correct position in the stream
+        // Reads bit at position pos from the stream
+        // Requires correct position in the stream
         bool readBit(fstream& fileIn, size_t pos) {
 
-            // read byte from the stream
+            // Read byte from the stream
             char byte;
             fileIn.get(byte);
             
-            // return the requested bit
+            // Return the requested bit
             switch(pos) {
                 case 0:
                     return byte & bit0;
@@ -68,7 +59,7 @@ class BitStream {
             return 1;
         }
 
-        // reads N bits from the stream, starting at position pos
+        // Reads N bits from the stream, starting at position pos
         vector<bool> readNBits(fstream& fileIn, size_t N, size_t pos) {
             vector<bool> values(N);
             
@@ -101,16 +92,16 @@ class BitStream {
             fileIn.seekg(-1, fileIn.end);
             fileIn.get(byte[0]);
             
-            cout << "Original byte: " << byte[0] << '\n';
+            //cout << "Original byte: " << byte[0] << '\n';
             
             // modify byte
             if (bit) {
                 byte[0] = (0b10000000 >> pos) | byte[0];  
-                cout << "Modified byte: " << byte[0] << '\n';
+                //cout << "Modified byte: " << byte[0] << '\n';
             } else {
                 //cout << "bitwise operator: " << (0xF7>>pos) << '\n'; 
                 byte[0] = (0b0111111101111111 >> pos) & byte[0]; 
-                cout << "Modified byte: " << byte[0] << '\n';
+                //cout << "Modified byte: " << byte[0] << '\n';
             }
 
             // write to file
