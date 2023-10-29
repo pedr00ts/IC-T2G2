@@ -8,6 +8,8 @@ using namespace std;
 class Wav_Effect {
     protected:
         int sampleRate;
+        int nChannels;
+        vector<vector<short>> channels;
     public:
         virtual vector<short> apply(vector<short>& in) {return in;}
 };
@@ -19,6 +21,7 @@ class Wav_Delay: public Wav_Effect {
 
     public:
         Wav_Delay (int sampleRate, float delay) {
+            Wav_Effect::sampleRate = sampleRate;
             Wav_Delay::delay = delay;
             mix = 0.4;
         }
@@ -39,6 +42,8 @@ class Wav_Delay: public Wav_Effect {
 
             return out;
         }
+
+
 };
 
 class Wav_Echo: public Wav_Effect {
@@ -46,28 +51,40 @@ class Wav_Echo: public Wav_Effect {
         float delay;
         float decay;
         float mix;
+        // aux
+        int delayInSamples;
+        int p;
 
     public:
-        Wav_Echo (int sampleRate, float delay, float decay) {
+        Wav_Echo (int sampleRate, int nChannels, float delay, float decay) {
+            delayInSamples = (int) (delay*sampleRate);
+            Wav_Effect::nChannels = nChannels;
+            Wav_Effect::channels = vector<vector<short>>(nChannels, vector<short>(delayInSamples));
+            p = 0;
+
             Wav_Effect::sampleRate = sampleRate;
             Wav_Echo::delay = delay;
             Wav_Echo::decay = decay;
             mix = 0.4;
         }
 
-        vector<short> apply(vector<short>& in) {
-            int delayInSamples = (int) delay*sampleRate;
-            vector<short> out(in.size() + delayInSamples);
-
-            int effect;
-            for (int i=0; i < out.size(); i++) {
-                if (i < delayInSamples) {
-                    out[i] = in[i];
-                } else {
-                    out[i] = (1-mix) * in[i] + mix * out[i - delayInSamples] * decay;
+        vector<short> apply(vector<short>& samplesIn) {
+            vector<short> out(samplesIn.size());
+            cout << delayInSamples << "\n";
+            
+            // aplicar efeito em cada canal
+            for (int i=0; i < samplesIn.size(); i+=nChannels) {
+                for (int c=0; c < nChannels; c++) {
+                    if (p < delayInSamples) {
+                        channels[c][p] = samplesIn[i+c];
+                    } else {
+                        channels[c][p % delayInSamples] = (1-mix) * samplesIn[i+c] + mix * channels[c][p % delayInSamples] * decay;
+                    }
+                    out[i+c] = channels[c][p % delayInSamples];
                 }
+                // atualizar indice global
+                p++;
             }
-            delayInSamples += delayInSamples;
 
             return out;
         }
