@@ -8,8 +8,11 @@ using namespace std;
 class Wav_Effect {
     protected:
         int sampleRate;
+        // buffer
         int nChannels;
         vector<vector<short>> channels;
+        int p;
+        
     public:
         virtual vector<short> apply(vector<short>& in) {return in;}
 };
@@ -18,27 +21,38 @@ class Wav_Delay: public Wav_Effect {
     private:
         float delay;
         float mix;
+        // aux
+        int delayInSamples;
 
     public:
-        Wav_Delay (int sampleRate, float delay) {
+        Wav_Delay (int sampleRate, int nChannels, float delay) {
+            delayInSamples = (int) (delay*sampleRate);
+            Wav_Effect::nChannels = nChannels;
+            Wav_Effect::channels = vector<vector<short>>(nChannels, vector<short>(delayInSamples));
+            p = 0;
+
             Wav_Effect::sampleRate = sampleRate;
             Wav_Delay::delay = delay;
             mix = 0.4;
         }
 
-        vector<short> apply(vector<short>& in) {
-            int delayInSamples = (int) delay*sampleRate;
-            vector<short> out(in.size() + delayInSamples);
-
-            int effect;
-            for (int i=0; i < out.size(); i++) {
-                if (i < delayInSamples) {
-                    out[i] = in[i];
-                } else {
-                    out[i] = (1-mix) * in[i] + mix * in[i - delayInSamples];
+        vector<short> apply(vector<short>& samplesIn) {
+            vector<short> out(samplesIn.size());
+            cout << delayInSamples << "\n";
+            
+            // aplicar efeito em cada canal
+            for (int i=0; i < samplesIn.size(); i+=nChannels) {
+                for (int c=0; c < nChannels; c++) {
+                    if (p < delayInSamples) {
+                        channels[c][p] = samplesIn[i+c];
+                    } else {
+                        out[i+c] = (1-mix) * samplesIn[i+c] + mix * channels[c][p % delayInSamples];
+                        channels[c][p % delayInSamples] = samplesIn[i+c];
+                    }
                 }
+                // atualizar indice global
+                p++;
             }
-            delayInSamples += delayInSamples;
 
             return out;
         }
@@ -53,7 +67,7 @@ class Wav_Echo: public Wav_Effect {
         float mix;
         // aux
         int delayInSamples;
-        int p;
+        
 
     public:
         Wav_Echo (int sampleRate, int nChannels, float delay, float decay) {
@@ -92,18 +106,22 @@ class Wav_Echo: public Wav_Effect {
 
 class Wav_Reverb: public Wav_Effect {
     private:
-        float delay;
-        float decay;
+        float maxDelay;
+        float maxDecay;
+        vector<Wav_Echo> echoes;
 
     public:
-        Wav_Reverb (int sampleRate, float delay, float decay) {
+        Wav_Reverb (int sampleRate, int nChannels, float maxDelay, float maxDecay) {
             Wav_Effect::sampleRate = sampleRate;
-            Wav_Reverb::delay = delay;
-            Wav_Reverb::decay = decay;
+            Wav_Reverb::maxDelay = maxDelay;
+            Wav_Reverb::maxDecay = maxDecay;
         }
 
-        vector<short> apply(vector<short>& in) {
-            vector<short> out = in;
+        vector<short> apply(vector<short>& samplesIn) {
+            vector<short> out = echoes[0].apply(samplesIn);
+            for (Wav_Echo echo: echoes) {
+                out = echo.apply(out);
+            }
             return out;
         }
 };

@@ -13,7 +13,7 @@ void usage(char *argv[]) {
 }
 
 enum EFFECT {
-     e = 'e', d = 'd', A = 'A'   
+     e = 'e', d = 'd', r = 'r'   
 };
 
 int main(int argc, char *argv[]) {
@@ -43,11 +43,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-    // Ler ficheiro de entrada
-	// vector<short> samples(sndFile.frames() * sndFile.channels());
-    // sndFile.readf(samples.data(), sndFile.frames()); // read all samples
-    // vector<short> samplesOut();
-
     vector<short> samplesIn(FRAMES_BUFFER_SIZE * sndFile.channels());
     switch(argv[2][1]) {
     case e:
@@ -72,15 +67,6 @@ int main(int argc, char *argv[]) {
             // Criar efeito
             Wav_Echo echo = Wav_Echo{sndFile.samplerate(), sndFile.channels(), delay, decay};
             cout << "echo criado \n";
-            
-            // aplicar efeito (ficheiro todo)
-            // vector<vector<short>> channelsIn = separate(samples, sndFile.channels());
-            // vector<vector<short>> channelsOut(channelsIn.size());
-            // for(int i=0; i<channelsIn.size(); i++) {
-            //     channelsOut[i] = echo.apply(channelsIn[i]); 
-            // }
-            // samplesOut = join(channelsOut);
-            // sndFileOut.writef(samplesOut.data(), samplesOut.size()/sndFile.channels());
 
             // aplicar efeito em blocos
             size_t nFrames;
@@ -97,35 +83,50 @@ int main(int argc, char *argv[]) {
         }
     case d:
         {
-            // float delay = stof(argv[3]);
-            // if (delay < 0 || delay > 20000) {
-            //     cerr << "Error: invalid delay value: " << delay << "\n";
-            //     usage(argv);
-            //     return 1;
-            // }
+            // Verificar parametros
+            float delay = stof(argv[3]);
+            if (delay < 0 || delay > 20000) {
+                cerr << "Error: invalid delay value: " << delay << "\n";
+                usage(argv);
+                return 1;
+            }
+            cout << delay << '\n';
 
-            // Wav_Delay delayEffect = Wav_Delay{sndFile.samplerate(), delay};
-            // cout << "delay criado \n";
-            
-            // vector<vector<short>> channelsIn = separate(samplesIn, sndFile.channels());
-            // vector<vector<short>> channelsOut(channelsIn.size());
-            // for(int i=0; i<channelsIn.size(); i++) {
-            //     channelsOut[i] = delayEffect.apply(channelsIn[i]); 
-            // }
-            // samplesOut = join(channelsOut);
+            // Criar efeito
+            Wav_Delay delayEffect = Wav_Delay{sndFile.samplerate(), sndFile.channels(), delay};
+            cout << "delay criado \n";
 
-            // cout << samplesIn.size() << '\n';
-            // cout << samplesOut.size() << '\n';
+            // aplicar efeito em blocos
+            size_t nFrames;
+            while(nFrames = sndFile.readf(samplesIn.data(), FRAMES_BUFFER_SIZE)) {
+                // ler bloco
+                samplesIn.resize(nFrames * sndFile.channels());
+                // aplicar efeito e escrever bloco
+                sndFileOut.writef(delayEffect.apply(samplesIn).data(), nFrames);
+            }
 
-            // sndFileOut.writef(samplesOut.data(), samplesOut.size()/sndFile.channels());
-            // return 0;
+            cout << samplesIn.size() << '\n';
+
+            return 0;
         }
-    case 'A':
+    case 'r':
+        // Verificar parametros
+            float maxDelay = stof(argv[3]);
+            float maxDecay = stof(argv[4]);
+            if (maxDelay < 0 || maxDelay > 20000) {
+                cerr << "Error: invalid delay value: " << maxDelay << "\n";
+                usage(argv);
+                return 1;
+            }
+            if (maxDecay < 0 | maxDecay >= 1) {
+                cerr << "Error: invalid decay value: " << maxDecay << "\n";
+                usage(argv);
+                return 1;
+            }
+            cout << maxDelay << '\n';
+            cout << maxDecay << '\n';
 
-        break;
-    default:
-        usage(argv);
-        return 1;
+            
     }
     
 
