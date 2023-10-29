@@ -71,12 +71,18 @@ class BitStream {
         // reads N bits from the stream, starting at position pos
         vector<bool> readNBits(fstream& fileIn, size_t N, size_t pos) {
             vector<bool> values(N);
-            for (int i = 0; i < N; i++) {
-                values[i] = readBit(fileIn, pos);
-                if (pos < 7)
-                    fileIn.seekg(fileIn.tellg()-1);
-                pos = (pos+1) % 8;
+            
+            if (N > 64) {
+                cerr << "Error in readNBits: function can only read 64 bits\n";
+            } else {
+                for (int i = 0; i < N; i++) {
+                    values[i] = readBit(fileIn, pos);
+                    if (pos < 7)
+                        fileIn.seekg(fileIn.tellg()-1);
+                    pos = (pos+1) % 8;
+                }
             }
+            
             return values;
         }
 
