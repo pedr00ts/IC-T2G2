@@ -126,7 +126,23 @@ int main(int argc, char *argv[]) {
             cout << maxDelay << '\n';
             cout << maxDecay << '\n';
 
-            
+        // Criar
+            Wav_Reverb reverbEffect = Wav_Reverb{sndFile.samplerate(), sndFile.channels(), maxDelay,maxDecay};
+            cout << "delay criado \n";
+
+        // aplicar efeito em blocos
+            size_t nFrames;
+            while(nFrames = sndFile.readf(samplesIn.data(), FRAMES_BUFFER_SIZE)) {
+                // ler bloco
+                samplesIn.resize(nFrames * sndFile.channels());
+                // aplicar efeito e escrever bloco
+                sndFileOut.writef(reverbEffect.apply(samplesIn).data(), nFrames);
+            }
+        
+            cout << samplesIn.size() << '\n';
+
+                return 0;
+                
     }
     
 
