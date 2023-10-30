@@ -1,9 +1,8 @@
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 int main()
 {
-    std::string image_path = "path/to/image";
+    std::string image_path = "../imagesamples/lena.ppm";
     Mat img = imread(image_path, IMREAD_COLOR);
 
     imshow("Display window", img);

@@ -11,7 +11,9 @@ SET (CMAKE_CXX_FLAGS_DEBUG "-g3 -fsanitize=address")
 SET (BASE_DIR ${CMAKE_SOURCE_DIR} )
 SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BASE_DIR}/bin)
 
-include_directories( /usr/include/opencv4 )
+find_package(OpenCV REQUIRED) 
+
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 add_executable (test_opencv opencv.cpp)
-target_link_libraries (test_opencv opencv)
+target_link_libraries(test_opencv ${OpenCV_LIBS})
