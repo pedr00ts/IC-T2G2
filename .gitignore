@@ -1,6 +1,7 @@
-sndfile-example-src/build
-sndfile-example-bin
 .vscode
-sndfile-example-out
+sndfile-example-src/build
 sndfile-example-src/tests
+sndfile-example-bin
+# Projeto 2
+Projeto2/bin
 
