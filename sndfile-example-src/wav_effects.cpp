@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 
         // Criar
             Wav_Reverb reverbEffect = Wav_Reverb{sndFile.samplerate(), sndFile.channels(), maxDelay,maxDecay};
-            cout << "delay criado \n";
+            cout << "Reverb criado \n";
 
         // aplicar efeito em blocos
             size_t nFrames;

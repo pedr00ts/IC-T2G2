@@ -108,19 +108,29 @@ class Wav_Reverb: public Wav_Effect {
     private:
         float maxDelay;
         float maxDecay;
-        vector<Wav_Echo> echoes;
+        vector<Wav_Echo*> echoes;
 
     public:
         Wav_Reverb (int sampleRate, int nChannels, float maxDelay, float maxDecay) {
             Wav_Effect::sampleRate = sampleRate;
             Wav_Reverb::maxDelay = maxDelay;
             Wav_Reverb::maxDecay = maxDecay;
+
+            // create echo lines
+            int steps = 5;
+            float delay, decay;
+            Wav_Reverb::echoes = vector<Wav_Echo*>(steps);
+            for (int s=steps; s >= 1; s--) {
+                delay = maxDelay/s;
+                decay = maxDecay/s;
+                echoes[steps-s] = new Wav_Echo(sampleRate, nChannels, delay, decay);
+            }
         }
 
         vector<short> apply(vector<short>& samplesIn) {
-            vector<short> out = echoes[0].apply(samplesIn);
-            for (Wav_Echo echo: echoes) {
-                out = echo.apply(out);
+            vector<short> out = samplesIn;
+            for (Wav_Echo* echo: echoes) {
+                out = echo->apply(out);
             }
             return out;
         }
