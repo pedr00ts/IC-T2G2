@@ -9,7 +9,18 @@ using namespace std;
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
 void usage(char *argv[]) {
-	cerr << "Usage: " << argv[0] << " <input file> <[-e][-d][-A]> <opt1> <opt2>  <output file>\n";
+	cerr << "Usage: " << argv[0] << " <input file> <effect> <params> <output file>\n";
+    cerr << "	                                                          \n";
+    cerr << "	List of available effects:                                \n";
+	cerr << "	-d <delay>               for the DELAY  effect            \n";
+	cerr << "	-e <delay> <decay>       for the ECHO   effect            \n";
+	cerr << "	-r <maxDelay> <maxDecay> for the REVERB effect            \n";
+    cerr << "	                                                          \n";
+    cerr << "	List of available configuration params:                   \n";
+    cerr << "	   <delay>: delay in seconds                              \n";
+    cerr << "	   <decay>: decay factor in the interval ]0,1[            \n";
+    cerr << "	   <maxDelay>: maximum delay in seconds                   \n";
+    cerr << "	   <maxDecay>: maximum decay factor in the interval ]0,1[ \n";
 }
 
 enum EFFECT {
