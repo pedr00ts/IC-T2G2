@@ -7,6 +7,9 @@ using namespace std;
 
 constexpr size_t FRAMES_BUFFER_SIZE = 65536; // Buffer for reading frames
 
+/**
+ * Outputs the usage of this program.
+*/
 void usage(char *argv[]) {
 	cerr << "Usage: " << argv[0] << " <input file> <option>\n";
 	cerr << "	List of available options:\n";
@@ -15,6 +18,9 @@ void usage(char *argv[]) {
 	cerr << "	-s            for SIDE\n";
 }
 
+/**
+ * Outputs the histogram of a WAV audio file from a list of available histogram options.
+*/
 int main(int argc, char *argv[]) {
 
 	if(argc < 3 || argc > 5) {
@@ -71,6 +77,9 @@ int main(int argc, char *argv[]) {
 		type = WAVHist::Type::MID;
 	} else if(option == "-s") {
 		type = WAVHist::Type::SIDE;
+	} else if(option == "-h") {
+		usage(argv);
+		return 0;
 	} else {
 		cerr << "Error: invalid option.\n";
 		usage(argv);
