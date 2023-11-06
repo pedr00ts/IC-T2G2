@@ -20,7 +20,7 @@ class Inv_Colors: public Img_Tools{
 
     public:
         Inv_Colors (Mat img_in) {
-            Img_Tools::img_in = img_in;
+            Inv_Colors::img_in = img_in;
         }
 
         Mat apply() {
