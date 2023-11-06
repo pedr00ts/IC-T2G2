@@ -46,13 +46,12 @@ int main(int argc, char *argv[])
         case m:  
             {   
               // check parameters 
-                string direction = argv[3];
-                if(direction != "h" && direction != "v"){
+                char direction = (char) tolower(argv[3][0]);
+                if(direction != 'h' && direction != 'v'){
                     cerr << "Error: invalid direction: " << direction  << "\n";
                     usage(argv);
                     return 1;
-                }
-                
+                }              
 
                 tool = Mirror {img, direction};                
                 
@@ -71,13 +70,20 @@ int main(int argc, char *argv[])
               // check parameters
               float intensity = stof(argv[3]);
 
+              if (intensity < 0) {
+                cerr << "Error: invalid intensity! Should be a positive value. " << "\n";
+                usage(argv);
+                return 1;
+              }
+
               tool = Brightness {img, intensity}; 
               break;
             }  
   
   }
-    
+  // apply tool operation
+  new_img = tool.apply();
   // write result image
-  imwrite(argv[3], new_img);
+  cv::imwrite(argv[-1], new_img);
   return 0;
 }
