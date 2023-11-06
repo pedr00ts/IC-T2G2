@@ -40,7 +40,8 @@ int main(int argc, char *argv[])
   switch(argv[2][1]) {
     case n: 
         {
-          tool = Inv_Colors {img};         
+          tool = Inv_Colors {img};
+          cout << "tool object created\n";         
           break;
         }   
     case m:  
@@ -53,8 +54,8 @@ int main(int argc, char *argv[])
               return 1;
           }              
 
-          tool = Mirror {img, direction};                
-          
+          tool = Mirror {img, direction};      
+                    
           break;      
         }      
     case r: 

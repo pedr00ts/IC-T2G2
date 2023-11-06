@@ -24,18 +24,25 @@ class Inv_Colors: public Img_Tools{
         }
 
         Mat apply() {
+            cout << "apply called\n";
             Mat inv_img = img_in.clone();
+            cout << "image cloned\n";
             Vec3b pixel;
 
             for (int i = 0; i < inv_img.rows; i++) {
                 for(int j = 0; i < inv_img.cols; j++) {
                     pixel = inv_img.at<Vec3b>(i,j);
+                    cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
                     for (short c = 0; c < 3; c++)
                         pixel[c] = 255 - pixel[c];
                     inv_img.at<Vec3b>(i,j) = pixel;
                 }
             }
+
+            return inv_img;
         }
+
+        
 
 };
 class Mirror: public Img_Tools{
