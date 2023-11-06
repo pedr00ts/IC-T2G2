@@ -37,50 +37,50 @@ int main(int argc, char *argv[])
 
   Img_Tools tool;
   Mat new_img;
-  switch(argv[2][1]){
-        case n: 
-            {
-                tool = Inv_Colors {img};         
-                break;
-            }   
-        case m:  
-            {   
-              // check parameters 
-                char direction = (char) tolower(argv[3][0]);
-                if(direction != 'h' && direction != 'v'){
-                    cerr << "Error: invalid direction: " << direction  << "\n";
-                    usage(argv);
-                    return 1;
-                }              
+  switch(argv[2][1]) {
+    case n: 
+        {
+          tool = Inv_Colors {img};         
+          break;
+        }   
+    case m:  
+        {   
+          // check parameters 
+          char direction = (char) tolower(argv[3][0]);
+          if(direction != 'h' && direction != 'v'){
+              cerr << "Error: invalid direction: " << direction  << "\n";
+              usage(argv);
+              return 1;
+          }              
 
-                tool = Mirror {img, direction};                
-                
-                break;      
-            }      
-        case r: 
-            {
-              // check parameters 
-              int times = stoi(argv[3]);
+          tool = Mirror {img, direction};                
+          
+          break;      
+        }      
+    case r: 
+        {
+          // check parameters 
+          int times = stoi(argv[3]);
 
-              tool = Rotate {img, times};
-              break;
-            }  
-        case l: 
-            {
-              // check parameters
-              float intensity = stof(argv[3]);
+          tool = Rotate {img, times};
+          break;
+        }  
+    case l: 
+        {
+          // check parameters
+          float intensity = stof(argv[3]);
 
-              if (intensity < 0) {
-                cerr << "Error: invalid intensity! Should be a positive value. " << "\n";
-                usage(argv);
-                return 1;
-              }
+          if (intensity < 0) {
+            cerr << "Error: invalid intensity! Should be a positive value. " << "\n";
+            usage(argv);
+            return 1;
+          }
 
-              tool = Brightness {img, intensity}; 
-              break;
-            }  
-  
+          tool = Brightness {img, intensity}; 
+          break;
+        }  
   }
+  
   // apply tool operation
   new_img = tool.apply();
   // write result image
