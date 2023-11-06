@@ -23,6 +23,20 @@ class Inv_Colors: public Img_Tools{
             Img_Tools::img_in = img_in;
         }
 
+        Mat apply() {
+            Mat inv_img = img_in.clone();
+            Vec3b pixel;
+
+            for (int i = 0; i < inv_img.rows; i++) {
+                for(int j = 0; i < inv_img.cols; j++) {
+                    pixel = inv_img.at<Vec3b>(i,j);
+                    for (short c = 0; c < 3; c++)
+                        pixel[c] = 255 - pixel[c];
+                    inv_img.at<Vec3b>(i,j) = pixel;
+                }
+            }
+        }
+
 };
 class Mirror: public Img_Tools{
     private:
@@ -46,7 +60,7 @@ class Rotate: public Img_Tools{
 };
 class Brightness: public Img_Tools{
     private:
-        float16_t factor;
+        float factor;
 
     public:
         Brightness (Mat img_in, float16_t f) {
