@@ -63,7 +63,7 @@ class Brightness: public Img_Tools{
         float factor;
 
     public:
-        Brightness (Mat img_in, float16_t f) {
+        Brightness (Mat img_in, float f) {
             Img_Tools::img_in = img_in;
             Brightness::factor = f;
         }

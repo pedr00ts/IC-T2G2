@@ -15,5 +15,8 @@ find_package(OpenCV REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_executable (test_opencv opencv.cpp)
-target_link_libraries(test_opencv ${OpenCV_LIBS})
+add_executable (ppm_extract ppm_extract.cpp)
+target_link_libraries(ppm_extract ${OpenCV_LIBS})
+
+add_executable (img_tools img_tools.cpp)
+target_link_libraries(img_tools ${OpenCV_LIBS})
