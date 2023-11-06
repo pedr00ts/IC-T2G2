@@ -1,6 +1,6 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-//#include "img_tools.h"
+#include "img_tools.h"
 
 using namespace std;
 using namespace cv;
@@ -35,27 +35,44 @@ int main(int argc, char *argv[])
   // check input file
   Mat img = imread(argv[1], IMREAD_COLOR);
 
-  Mat new_img {};
+  Img_Tools tool;
+  Mat new_img;
   switch(argv[2][1]){
         case n: 
             {
-                              
+                tool = Inv_Colors {img};         
                 break;
             }   
         case m:  
-            {
+            {   
+              // check parameters 
+                string direction = argv[3];
+                if(direction != "h" && direction != "v"){
+                    cerr << "Error: invalid direction: " << direction  << "\n";
+                    usage(argv);
+                    return 1;
+                }
+                
 
+                tool = Mirror {img, direction};                
+                
                 break;      
             }      
         case r: 
             {
-                
-                break;
+              // check parameters 
+              int times = stoi(argv[3]);
+
+              tool = Rotate {img, times};
+              break;
             }  
         case l: 
             {
-                
-                break;
+              // check parameters
+              float intensity = stof(argv[3]);
+
+              tool = Brightness {img, intensity}; 
+              break;
             }  
   
   }
