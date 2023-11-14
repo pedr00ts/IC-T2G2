@@ -33,7 +33,11 @@ class BitStream {
 
         bool readBit() {
             char B = file.get();
+<<<<<<< HEAD
             bool bit = 0;
+=======
+            bool bit;
+>>>>>>> refs/remotes/origin/main
             switch(readPos++) {
                 case 0:
                     bit = B & bit0;
@@ -61,7 +65,11 @@ class BitStream {
                     break;
             }
             if (readPos < 8) {
+<<<<<<< HEAD
                 file.seekg(file.cur-1);
+=======
+                file.unget();
+>>>>>>> refs/remotes/origin/main
             } else {
                 readPos = 0;
             }
@@ -70,6 +78,7 @@ class BitStream {
         }
 
         void writeBit(bool bit) {
+<<<<<<< HEAD
             char B = 0x00;          // Initialize byte
 
             if (writePos != 0) {    // Pos not aligned -> read last byte
@@ -80,11 +89,25 @@ class BitStream {
            }
             
             if(bit) {               // Modify byte
+=======
+            int rp = file.tellg();
+
+            if (writePos != 8)
+                file.seekg(file.tellp()-1);
+            else
+                writePos = 0;
+
+            char B = file.get();
+            file.seekg(rp);
+            
+            if(bit) {
+>>>>>>> refs/remotes/origin/main
                 B = B | (MASK::bit0 >> writePos);
             } else { 
                 B = B & (0xFF7F >> writePos);
             }
 
+<<<<<<< HEAD
             if (writePos == 0) {
                 file.seekp(0, file.end);
             } else {
@@ -104,6 +127,10 @@ class BitStream {
                 bits.push_back(readBit());
             
             return bits; 
+=======
+            file.put(B);
+            writePos++;
+>>>>>>> refs/remotes/origin/main
         }
 
         void close() {
@@ -129,6 +156,7 @@ int main(int argc, char* argv[]) {
         cout << testfile.readBit() << " ";
     }
 
+<<<<<<< HEAD
     testfile.writeBit(0);
     testfile.writeBit(1);
     testfile.writeBit(0);
@@ -137,6 +165,10 @@ int main(int argc, char* argv[]) {
     testfile.writeBit(1);
     testfile.writeBit(1);
     testfile.writeBit(1);
+=======
+    testfile.writeBit(1);
+    testfile.writeBit(0);
+>>>>>>> refs/remotes/origin/main
 
     testfile.close();
 }
