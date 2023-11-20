@@ -56,6 +56,22 @@ class Mirror: public Img_Tools{
             Img_Tools::img_in = img_in;
             Mirror::type = type;
         }
+        virtual Mat apply() override{ 
+            cout << "apply called\n";
+            Mat mir_img = Mat::zeros(img_in.rows, img_in.cols, CV_8UC3);
+
+            for (int i = 0; i < mir_img.rows; i++) {
+                for (int j = 0; j < mir_img.cols; j++) {
+                    if (type == 'h') {
+                        mir_img.at<Vec3b>(mir_img.rows - 1 - i, j) = img_in.at<Vec3b>(i, j);
+                    } else if (type == 'v') {
+                        mir_img.at<Vec3b>(i, mir_img.cols - 1 - j) = img_in.at<Vec3b>(i, j);
+                    }
+                }
+            }
+            return mir_img;
+
+        }
 };
 class Rotate: public Img_Tools{
     private:
@@ -79,19 +95,19 @@ class Brightness: public Img_Tools{
 
         virtual Mat apply() override{
             cout << "apply called\n";
-            Mat inv_img = Mat::zeros(img_in.rows, img_in.cols, CV_8UC3);
+            Mat brt_img = Mat::zeros(img_in.rows, img_in.cols, CV_8UC3);
             Vec3b pixel;
 
-            for (int i = 0; i < inv_img.rows; i++) {
-                for(int j = 0; j < inv_img.cols; j++) {
+            for (int i = 0; i < brt_img.rows; i++) {
+                for(int j = 0; j < brt_img.cols; j++) {
                     pixel = img_in.at<Vec3b>(i,j);
                     //cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
                     for (short c = 0; c < 3; c++)
                         pixel[c] = pixel[c] * factor;
-                    inv_img.at<Vec3b>(i,j) = pixel;
+                    brt_img.at<Vec3b>(i,j) = pixel;
                 }
             }
 
-            return inv_img;
+            return brt_img;
         }
 };
