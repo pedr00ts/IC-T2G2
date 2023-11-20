@@ -33,7 +33,11 @@ class BitStream {
 
         bool readBit() {
             char B = file.get();
+<<<<<<< HEAD
+            bool bit = 0;
+=======
             bool bit;
+>>>>>>> refs/remotes/origin/main
             switch(readPos++) {
                 case 0:
                     bit = B & bit0;
@@ -61,7 +65,11 @@ class BitStream {
                     break;
             }
             if (readPos < 8) {
+<<<<<<< HEAD
+                file.seekg(file.cur-1);
+=======
                 file.unget();
+>>>>>>> refs/remotes/origin/main
             } else {
                 readPos = 0;
             }
@@ -70,6 +78,18 @@ class BitStream {
         }
 
         void writeBit(bool bit) {
+<<<<<<< HEAD
+            char B = 0x00;          // Initialize byte
+
+            if (writePos != 0) {    // Pos not aligned -> read last byte
+                int rp = file.tellg();
+                file.seekg(-1, file.end);
+                B = file.peek();
+                file.seekg(rp);
+           }
+            
+            if(bit) {               // Modify byte
+=======
             int rp = file.tellg();
 
             if (writePos != 8)
@@ -81,13 +101,36 @@ class BitStream {
             file.seekg(rp);
             
             if(bit) {
+>>>>>>> refs/remotes/origin/main
                 B = B | (MASK::bit0 >> writePos);
             } else { 
                 B = B & (0xFF7F >> writePos);
             }
 
+<<<<<<< HEAD
+            if (writePos == 0) {
+                file.seekp(0, file.end);
+            } else {
+                file.seekp(-1, file.end);
+            }
+            file.put(B);            // Write byte
+
+            writePos = (writePos + 1) % 8;           
+        }
+
+        vector<bool> readNBits(size_t N) {
+            if (N > 64) {
+                throw std::invalid_argument("invalid N value in readNBits. [0 <= N <= 64]\n");
+            }
+            vector<bool> bits{};
+            for(int i = 0; i < N; i++) 
+                bits.push_back(readBit());
+            
+            return bits; 
+=======
             file.put(B);
             writePos++;
+>>>>>>> refs/remotes/origin/main
         }
 
         void close() {
@@ -113,8 +156,19 @@ int main(int argc, char* argv[]) {
         cout << testfile.readBit() << " ";
     }
 
+<<<<<<< HEAD
+    testfile.writeBit(0);
     testfile.writeBit(1);
     testfile.writeBit(0);
+    testfile.writeBit(0);
+    testfile.writeBit(0);
+    testfile.writeBit(1);
+    testfile.writeBit(1);
+    testfile.writeBit(1);
+=======
+    testfile.writeBit(1);
+    testfile.writeBit(0);
+>>>>>>> refs/remotes/origin/main
 
     testfile.close();
 }
