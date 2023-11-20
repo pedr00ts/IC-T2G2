@@ -35,12 +35,12 @@ int main(int argc, char *argv[])
   // check input file
   Mat img = imread(argv[1], IMREAD_COLOR);
 
-  Img_Tools tool;
+  Img_Tools* tool;
   Mat new_img;
   switch(argv[2][1]) {
     case n: 
         {
-          tool = Inv_Colors {img};
+          tool = new Inv_Colors {img};
           cout << "tool object created\n";         
           break;
         }   
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
               return 1;
           }              
 
-          tool = Mirror {img, direction};      
+          tool = new Mirror {img, direction};      
                     
           break;      
         }      
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
           // check parameters 
           int times = stoi(argv[3]);
 
-          tool = Rotate {img, times};
+          tool = new Rotate {img, times};
           break;
         }  
     case l: 
@@ -77,14 +77,16 @@ int main(int argc, char *argv[])
             return 1;
           }
 
-          tool = Brightness {img, intensity}; 
+          tool = new Brightness {img, intensity}; 
           break;
         }  
   }
   
   // apply tool operation
-  new_img = tool.apply();
+  new_img = tool->apply();
   // write result image
-  cv::imwrite(argv[-1], new_img);
+  cv::imwrite(argv[argc-1], new_img);
+  
+  delete tool;
   return 0;
 }
