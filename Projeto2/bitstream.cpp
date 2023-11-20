@@ -162,25 +162,3 @@ class BitStream {
         }
 
 };
-
-int main(int argc, char* argv[]) {
-    BitStream testfile {"test.txt"};
-
-
-    cout << "Primeiros 6 bits:\n";
-    for(int i = 0; i < 6; i++) {
-        cout << testfile.readBit() << " ";
-    }
-
-    testfile.writeBit(0);
-    testfile.writeBit(1);
-    testfile.writeBit(0);
-    testfile.writeBit(0);
-    testfile.writeBit(0);
-    testfile.writeBit(1);
-    testfile.writeBit(1);
-    testfile.writeBit(1);
-
-    testfile.close();
-}
-
