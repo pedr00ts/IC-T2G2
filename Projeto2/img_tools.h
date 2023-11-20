@@ -62,9 +62,9 @@ class Mirror: public Img_Tools{
 
             for (int i = 0; i < mir_img.rows; i++) {
                 for (int j = 0; j < mir_img.cols; j++) {
-                    if (type == 'h') {
+                    if (type == 'v') {
                         mir_img.at<Vec3b>(mir_img.rows - 1 - i, j) = img_in.at<Vec3b>(i, j);
-                    } else if (type == 'v') {
+                    } else if (type == 'h') {
                         mir_img.at<Vec3b>(i, mir_img.cols - 1 - j) = img_in.at<Vec3b>(i, j);
                     }
                 }
@@ -102,8 +102,13 @@ class Brightness: public Img_Tools{
                 for(int j = 0; j < brt_img.cols; j++) {
                     pixel = img_in.at<Vec3b>(i,j);
                     //cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
-                    for (short c = 0; c < 3; c++)
+                    for (short c = 0; c < 3; c++){
                         pixel[c] = pixel[c] * factor;
+
+                        if (pixel[c] > 255){
+                            pixel[c] = 255;
+                        }
+                    }
                     brt_img.at<Vec3b>(i,j) = pixel;
                 }
             }
