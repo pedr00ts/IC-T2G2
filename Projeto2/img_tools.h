@@ -9,6 +9,9 @@ class Img_Tools{
         Mat img_in;
 
     public:
+
+        virtual ~Img_Tools() {}  // Adicione um destrutor virtual
+
         virtual Mat apply() {
             Mat img_out = img_in;
             return img_out;
@@ -23,16 +26,15 @@ class Inv_Colors: public Img_Tools{
             Inv_Colors::img_in = img_in;
         }
 
-        Mat apply() {
+        virtual Mat apply() override{
             cout << "apply called\n";
-            Mat inv_img = img_in.clone();
-            cout << "image cloned\n";
+            Mat inv_img = Mat::zeros(img_in.rows, img_in.cols, CV_8UC3);
             Vec3b pixel;
 
             for (int i = 0; i < inv_img.rows; i++) {
-                for(int j = 0; i < inv_img.cols; j++) {
-                    pixel = inv_img.at<Vec3b>(i,j);
-                    cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
+                for(int j = 0; j < inv_img.cols; j++) {
+                    pixel = img_in.at<Vec3b>(i,j);
+                    //cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
                     for (short c = 0; c < 3; c++)
                         pixel[c] = 255 - pixel[c];
                     inv_img.at<Vec3b>(i,j) = pixel;
@@ -73,5 +75,23 @@ class Brightness: public Img_Tools{
         Brightness (Mat img_in, float f) {
             Img_Tools::img_in = img_in;
             Brightness::factor = f;
+        }
+
+        virtual Mat apply() override{
+            cout << "apply called\n";
+            Mat inv_img = Mat::zeros(img_in.rows, img_in.cols, CV_8UC3);
+            Vec3b pixel;
+
+            for (int i = 0; i < inv_img.rows; i++) {
+                for(int j = 0; j < inv_img.cols; j++) {
+                    pixel = img_in.at<Vec3b>(i,j);
+                    //cout << "Pixel original: " << pixel[0] << " " << pixel[1] << " " << pixel[2] << '\n';
+                    for (short c = 0; c < 3; c++)
+                        pixel[c] = pixel[c] * factor;
+                    inv_img.at<Vec3b>(i,j) = pixel;
+                }
+            }
+
+            return inv_img;
         }
 };
