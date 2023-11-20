@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     case l: 
         {
           // check parameters
-          float intensity = stof(argv[3]);
+          int intensity = stoi(argv[3]);
 
           if (intensity < 0) {
             cerr << "Error: invalid intensity! Should be a positive value. " << "\n";
