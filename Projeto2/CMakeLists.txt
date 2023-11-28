@@ -22,3 +22,5 @@ add_executable (img_tools img_tools.cpp)
 target_link_libraries(img_tools ${OpenCV_LIBS})
 
 add_library(bitstream bitstream.cpp)
+
+add_executable(golomb golomb.cpp)
