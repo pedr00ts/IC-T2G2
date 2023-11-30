@@ -21,4 +21,9 @@ target_link_libraries(ppm_extract ${OpenCV_LIBS})
 add_executable (img_tools img_tools.cpp)
 target_link_libraries(img_tools ${OpenCV_LIBS})
 
-add_library(bitstream bitstream.cpp)
+add_library(golomb STATIC golomb.cpp)
+
+add_library(bitstream STATIC bitstream.cpp)
+
+add_executable(sndCodec sndCodec.cpp)
+target_link_libraries(sndCodec golomb bitstream)
