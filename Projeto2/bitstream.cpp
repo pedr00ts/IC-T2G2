@@ -12,11 +12,6 @@ bool BitStream::hasNext() {
     return !file.eof();
 }
 
-bool BitStream::(size_t N) {
-    std::streampos pos = file.cur;
-}
-
-
 bool BitStream::readBit() {
     char B = file.get();
     bool bit = 0;

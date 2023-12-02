@@ -7,6 +7,7 @@ Golomb::Golomb(uint32_t mod, bool b) {
     m = mod;
     mode = b;
     bitcount = floor(log2(mod));
+    p = pow(bitcount, 2);
 }
 
 vector<bool> Golomb::encodePrefix(int n) {     // returns unary prefix
@@ -116,6 +117,120 @@ int Golomb::decode(vector<bool> encodedN) {
     return value;
 
 }
+
+uint32_t Golomb::M() {
+    return m;
+}
+
+bool Golomb::Mode() {
+    return mode;
+}
+
+uint8_t Golomb::BitCount() {
+    return bitcount;
+}
+
+uint32_t Golomb::P() {
+    return p;
+}
+
+
+// GolombStream
+GolombStream::GolombStream(Golomb golomb, string path) {
+    GolombStream::golomb = golomb;
+    GolombStream::stream = BitStream(path);
+}
+
+bool GolombStream::hasNext() {
+    return stream.hasNext();
+}
+
+void GolombStream::close() {
+    stream.close();
+}
+
+void GolombStream::encodeNext(int n) {
+    if (golomb.M()) {
+        n *= 2;
+        if (n < 0)
+            n++;
+    }
+
+    // encode prefix
+    for (uint32_t i = 0; i < abs(n)/golomb.M(); i++)    // insert n/m 0's in vector
+        stream.writeBit(0);
+    stream.writeBit(1);                        // insert terminator 1
+
+    // encode suffix
+    u_int32_t rem = abs(n) % golomb.M();            // remainder used in suffix
+    if (golomb.M() == golomb.P() || rem < golomb.P()-1) {                      // cases: m is a power of 2 or no extended bitcount
+        for (uint32_t mask = 1<<(golomb.BitCount()-1); mask > 0; mask = mask>>1) 
+            stream.writeBit((bool) (rem & mask)); 
+    } else {                                        // rem higher than p
+        for (uint8_t i = 0; i < golomb.BitCount(); i++)      // insert bitcount 1's
+            stream.writeBit(1);
+        for (u_int32_t i = golomb.P()-1; i < rem; i++) {     // extended 1's
+            stream.writeBit(1);
+        }
+        stream.writeBit(0);                         // value ends in 0
+    }
+    // encode sign (when necessary)
+    if (golomb.Mode() == 0) {                                // insert sign bit
+        if (n < 0)
+            stream.writeBit(1);
+        else if (n > 0)
+            stream.writeBit(0);
+    }
+}
+
+int GolombStream::decodeNext() {
+    uint32_t q {};                                                       // quotient
+    uint32_t r {};                                                       // remainder
+    
+    // decode prefix
+    bool complete = true;
+    while ((complete = stream.hasNext()) && stream.readBit() != 1) {
+        q++;
+    }
+    // decode suffix
+    for (int c = 0; (complete = stream.hasNext()) && c < golomb.BitCount(); c++) {
+        r = r << 1;
+        r = r | stream.readBit();
+    } 
+    // decode extended suffix bits (when expected)
+    if (golomb.M() != golomb.P() && r == golomb.P()-1) {
+        while ((complete = stream.hasNext()) && stream.readBit() != 0 && r < golomb.M()) {
+            r++;  
+        }
+    }
+    // verify incomplete code error
+    if (!complete)
+        throw invalid_argument("Incomplete code\n");
+    // verify suffix overflow error
+    if (r >= golomb.M())
+        throw invalid_argument("Value is not coded correctly - suffix is too large\n");
+
+    int value = q*golomb.M() + r;
+    if (golomb.Mode() == 0) {
+        if (q != 0 || r != 0){                  // expecting sign bit
+            if (!stream.hasNext())
+                throw invalid_argument("Value is not coded correctly - missing sign bit\n");
+            bool isNegative = stream.readBit();
+            if (isNegative)
+                value = -value;
+        }
+    } else {
+        if (value % 2 != 0) {
+            value++;
+            value = -value; 
+        }
+        value /= 2;
+    }
+
+    return value;
+}
+
+
 /*
 int main(int argc, char* argv[]) {
     if (argc != 4) {

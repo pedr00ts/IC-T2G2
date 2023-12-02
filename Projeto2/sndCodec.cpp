@@ -1,56 +1,42 @@
 #include "sndCodec.h"
+
 sndCodec::sndCodec(uint32_t m, bool mode) {
-    sndCodec::golomb = Golomb{m, mode};
+    sndCodec::golomb = {m, mode};
 }
 
 sndCodec::sndCodec(bool mode) {
-    sndCodec::golomb = Golomb{mode};
+    sndCodec::golomb = {mode};
 }
 
-sndCodec::~sndCodec() {
-}
-
-void sndCodec::encode(SndfileHandle& sndFile, string encodedFilePath) {
-    BitStream writeStream {encodedFilePath};
+void sndCodec::encode(SndfileHandle& sndFile, string encodedPath) {
+    GolombStream gstream(golomb, encodedPath);
     uint32_t nFrames;
-    vector<short> samples(FRAMES_BUFFER_SIZE);
-    
+    vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
     while(nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE)) {
-        for (short frame : samples) {
-            vector<bool> code = golomb.encode(frame);
-            vector<bool> aux;
-            while(code.size() >= 64) {
-                aux = vector<bool>(code.begin(), code.begin() + 63);
-                for (size_t i = 0; i < 64 && i < code.size(); i++) {
-                    writeStream.writeNBits(aux);
-                }
-                code.erase(code.begin(), code.begin()+64);
-            }
-
-            for (bool b : code)
-                writeStream.writeBit(b);
-            }
+        samples.resize(nFrames * sndFile.channels());
+        for (short frame : samples)
+            gstream.encodeNext(frame);
     }
-
-    writeStream.close();
+    gstream.close();
 }
 
-void sndCodec::decode(string encodedFilePath, SndfileHandle& sndFile) {
-    BitStream readStream {encodedFilePath};
-    vector<bool> code;
-    bool b;
-
-    while(readStream.hasNext()) {                       // file loop
-        while(readStream.hasNext()) {                   // prefix loop
-            b = readStream.readBit();
-            code.push_back(b);
-            if (b)
-                break;
+void sndCodec::decode(string encodePath, string decodePath) {
+    GolombStream gstream(golomb, encodePath);
+    
+    // decode header
+    int samplerate = 44100;
+    int channels = 2;
+    // create SndFileHandle
+    SndfileHandle sndFile {decodePath, SFM_WRITE, 0, channels, samplerate};
+    // decode data
+    vector<short> samples {};
+    while (gstream.hasNext()){
+        samples.push_back(gstream.decodeNext());
+        if(samples.size() == FRAMES_BUFFER_SIZE) {
+            sndFile.writef(samples.data(), samples.size());
+            samples.clear();
         }
-
-        while(read)
-
     }
-
+    sndFile.writef(samples.data(), samples.size());
 }
 

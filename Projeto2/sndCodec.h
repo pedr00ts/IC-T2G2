@@ -3,6 +3,9 @@
 #include <sndfile.hh>
 #define FRAMES_BUFFER_SIZE 65536
 
+
+#ifndef SNDCODEC
+#define SNDCODEC
 class sndCodec
 {
 private:
@@ -11,10 +14,10 @@ private:
 public:
     sndCodec(uint32_t m, bool mode);
     sndCodec(bool mode);
-    ~sndCodec();
+    sndCodec() = default;
+    ~sndCodec() = default;
 
-    void encode(SndfileHandle& sndFile, string encodedFilePath);
-    void decode(string encodedFilePath, SndfileHandle& sndFile);
+    void encode(SndfileHandle& sndFile, string encodedPath);
+    void decode(string encodedPath, string decodedPath);
 };
-
-
+#endif

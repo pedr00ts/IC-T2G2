@@ -25,5 +25,7 @@ add_library(golomb STATIC golomb.cpp)
 
 add_library(bitstream STATIC bitstream.cpp)
 
-add_executable(sndCodec sndCodec.cpp)
-target_link_libraries(sndCodec golomb bitstream)
+add_library(sndCodec STATIC sndCodec.cpp)
+
+add_executable(sndCodecMain sndCodecMain.cpp)
+target_link_libraries(sndCodecMain sndCodec golomb bitstream sndfile)

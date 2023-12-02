@@ -2,14 +2,18 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include "bitstream.h"
 
 using namespace std;
 
+#ifndef GOLOMB
+#define GOLOMB
 class Golomb {
     private:
         uint32_t m;                                    // encoding modulus
         bool mode;                                     // (0) -> magnitude + sign; (1) -> pos/neg interleaving
         uint8_t bitcount;                              // number of bits in suffix
+        uint32_t p;                                    // number of bitcount values
         vector<bool> encodePrefix(int n);              // returns unary prefix
         vector<bool> encodeSuffix(int n);              // returns suffix
 
@@ -17,4 +21,25 @@ class Golomb {
         Golomb(uint32_t mod=4, bool b=0);
         vector<bool> encode(int n);
         int decode(vector<bool> encodedN);
+        uint32_t M();
+        bool Mode();
+        uint8_t BitCount();
+        uint32_t P();
 };
+#endif
+
+#ifndef GOLOMBSTREAM
+#define GOLOMBSTREAM
+class GolombStream {
+    private:
+        Golomb golomb;                                 // golomb code parameters
+        BitStream stream;                              // golomb code stream
+
+    public:
+        GolombStream(Golomb golomb, string path);
+        bool hasNext();
+        void close();
+        int decodeNext();
+        void encodeNext(int n);
+};
+#endif
