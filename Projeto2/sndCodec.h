@@ -10,6 +10,7 @@ class sndCodec
 {
 private:
     Golomb golomb;
+    vector<short> last_values;
 
 public:
     sndCodec(uint32_t m, bool mode);

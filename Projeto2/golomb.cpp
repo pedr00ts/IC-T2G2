@@ -7,7 +7,7 @@ Golomb::Golomb(uint32_t mod, bool b) {
     m = mod;
     mode = b;
     bitcount = floor(log2(mod));
-    p = pow(bitcount, 2);
+    p = pow(2, bitcount);
 }
 
 vector<bool> Golomb::encodePrefix(int n) {     // returns unary prefix
@@ -150,7 +150,7 @@ void GolombStream::close() {
 }
 
 void GolombStream::encodeNext(int n) {
-    if (golomb.M()) {
+    if (golomb.Mode()) {
         n *= 2;
         if (n < 0)
             n++;
