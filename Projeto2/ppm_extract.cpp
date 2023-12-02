@@ -1,60 +1,19 @@
-#include <iostream>
-#include <opencv2/opencv.hpp>
 #include "ppm_extract.h"
 
-using namespace std;
-using namespace cv;
 
-
-void usage(char *argv[]){
-    cerr << "Usage: " << argv[0] << " <input file> <channel> <output file> \n";
-    cerr << "	List of available channels:\n";
-	cerr << "	-r            for channel RED\n";
-	cerr << "	-g            for channel GREEN\n";
-	cerr << "	-b            for channel BLUE\n";
+PPMExtract::PPMExtract(int channel,Mat img){
+    PPMExtract::channel = channel;
+    PPMExtract::img_in = img;
 }
 
-enum CHANNEL{
-    r = 'r', g = 'g', b = 'b'
-};
-
-int main(int argc, char *argv[])
-{
-    if(argc != 4) {
-		cerr << "Error: wrong number of args\n";
-		usage(argv);
-		return 1;
-	}
+Mat PPMExtract::extract(){
+    Mat new_image = Mat::zeros(img_in.rows, img_in.cols, CV_8UC1);
     
-    // std::string image_path = "../imagesamples/lena.ppm";
-    // std::string mew_image_path = "../imagesamples/lenablue.ppm";
-    int channel;
-    switch(argv[2][1]){
-        case r: 
-            {
-                channel = 2;
-                break;
-            }   
-        case g:  
-            {
-                channel = 1;  
-                break;      
-            }      
-        case b: 
-            {
-                channel = 0;
-                break;
-            }       
-    
+    for (int i = 0; i < img_in.rows; i++) {
+        for (int j = 0; j < img_in.cols; j++) {
+            new_image.at<uchar>(i,j) = img_in.at<Vec3b>(i,j)[channel];        
+        }
     }
-    Mat img = imread(argv[1], IMREAD_COLOR);
-
-
-    PPMExtract original = PPMExtract{channel,img};
-
-    Mat new_img = original.extract();
-
-
-    imwrite(argv[3],new_img);
-    return 0;
+    return new_image;   
 }
+
