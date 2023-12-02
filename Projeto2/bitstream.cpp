@@ -9,7 +9,7 @@ BitStream::BitStream(string path) {
 }
 
 bool BitStream::hasNext() {
-    return !file.eof();
+    return(!file.fail());
 }
 
 bool BitStream::readBit() {
@@ -38,12 +38,10 @@ bool BitStream::readBit() {
             bit = B & bit6;
             break;
         case 7:
-            bit = B & bit7;
-            break;
+            readPos = 0;
+            return B & bit7;
     }        
-        file.seekg(file.cur-1);
-        readPos = 0;
-
+    file.seekg(file.cur-1);
     return bit;
 }
 

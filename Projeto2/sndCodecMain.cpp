@@ -11,7 +11,7 @@ void usage(char *argv[]){
 	cerr << "	-d      decode <fileIn> to <fileOut>.\n";
 
   cerr << "	List of params:\n";
-	cerr << "	mode:   (0) -> sign and maginitude (1) -> positive/negative interleaving.\n";
+	cerr << "	mode:   (0) -> sign and magnitude (1) -> positive/negative interleaving.\n";
 	cerr << "	m:      optional golomb modulus parameter.\n";
 }
 

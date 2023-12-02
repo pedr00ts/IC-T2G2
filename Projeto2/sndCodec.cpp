@@ -54,24 +54,22 @@ void sndCodec::decode(string encodePath, string decodePath) {
         switch(last_values.size()) {
             case 0:
                 frame = res;
-                samples.push_back(frame);
                 break;
             case 1:
                 frame = res + last_values[0];
-                samples.push_back(frame);
                 break;
             case 2:
                 frame = res + 2*last_values[1] - last_values[0];
-                samples.push_back(frame);
                 break;
             default:
                 frame = res + 3*last_values[2] - 3*last_values[1] + last_values[0];
-                samples.push_back(frame);
                 last_values.erase(last_values.begin());
-            last_values.push_back(frame);
         }
-        samples.push_back(gstream.decodeNext());
+        last_values.push_back(frame);
+        cout << frame << '\n';                  // DEBUG
+        samples.push_back(frame);
         if(samples.size() == FRAMES_BUFFER_SIZE) {
+            cout << "write buffer\n";
             sndFile.writef(samples.data(), samples.size());
             samples.clear();
         }
