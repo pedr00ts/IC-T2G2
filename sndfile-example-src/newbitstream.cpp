@@ -31,13 +31,13 @@ class BitStream {
             writePos = 0;
         }
 
+        bool hasNext() {
+            return !file.eof();
+        }
+
         bool readBit() {
             char B = file.get();
-<<<<<<< HEAD
             bool bit = 0;
-=======
-            bool bit;
->>>>>>> refs/remotes/origin/main
             switch(readPos++) {
                 case 0:
                     bit = B & bit0;
@@ -65,11 +65,7 @@ class BitStream {
                     break;
             }
             if (readPos < 8) {
-<<<<<<< HEAD
                 file.seekg(file.cur-1);
-=======
-                file.unget();
->>>>>>> refs/remotes/origin/main
             } else {
                 readPos = 0;
             }
@@ -78,7 +74,6 @@ class BitStream {
         }
 
         void writeBit(bool bit) {
-<<<<<<< HEAD
             char B = 0x00;          // Initialize byte
 
             if (writePos != 0) {    // Pos not aligned -> read last byte
@@ -89,25 +84,11 @@ class BitStream {
            }
             
             if(bit) {               // Modify byte
-=======
-            int rp = file.tellg();
-
-            if (writePos != 8)
-                file.seekg(file.tellp()-1);
-            else
-                writePos = 0;
-
-            char B = file.get();
-            file.seekg(rp);
-            
-            if(bit) {
->>>>>>> refs/remotes/origin/main
                 B = B | (MASK::bit0 >> writePos);
             } else { 
                 B = B & (0xFF7F >> writePos);
             }
 
-<<<<<<< HEAD
             if (writePos == 0) {
                 file.seekp(0, file.end);
             } else {
@@ -123,27 +104,62 @@ class BitStream {
                 throw std::invalid_argument("invalid N value in readNBits. [0 <= N <= 64]\n");
             }
             vector<bool> bits{};
+            
+            char c;
+            while (N >= 8) {
+                c = file.get();
+                for (int i = 7; i >= 0; i++)
+                    bits.push_back(c & (0b1 << i));
+                N -= 8;
+            }
+
             for(int i = 0; i < N; i++) 
                 bits.push_back(readBit());
             
             return bits; 
-=======
-            file.put(B);
-            writePos++;
->>>>>>> refs/remotes/origin/main
+        }
+
+        void writeNBits(vector<bool> bits) {
+            if (bits.size() > 64) {
+                throw std::invalid_argument("invalid bits argument in readNBits. [0 <= bits.size() <= 64]\n");
+            }
+
+            int n = bits.size()/8;
+            char c;
+            for (size_t i = 0; i < n; i++) {
+                c = 0x00;
+                for (size_t j = 0; j < 8; j++) {
+                    c = c | (bits[8*i + j] << 7-j);
+                }
+                file.put(c);
+            }
+            
+            for(size_t i = bits.size() - bits.size()%8; i < bits.size(); i++)
+                writeBit(bits[i]);
+        }
+
+        string readString() {
+            vector<char> ch{};
+            char next;
+
+            do {
+                next = file.peek();
+                if ((next != file.eof()) && (next != '\0'))
+                    ch.push_back(next);
+            } while ((next != file.eof()) && (next != '\0'));
+            
+            string str(ch.begin(), ch.end());
+            return str;
+        }
+
+        void writeString(string str) {
+            for(char c : str)
+                file.put(c);
         }
 
         void close() {
             file.close();
         }
-
-
-
-        
-        vector<bool> readNBits(size_t N);
-        void writeNBits(vector<bool> bits);
-        string readString();
-        void writeString(char* s);
 
 };
 
@@ -156,7 +172,6 @@ int main(int argc, char* argv[]) {
         cout << testfile.readBit() << " ";
     }
 
-<<<<<<< HEAD
     testfile.writeBit(0);
     testfile.writeBit(1);
     testfile.writeBit(0);
@@ -165,10 +180,6 @@ int main(int argc, char* argv[]) {
     testfile.writeBit(1);
     testfile.writeBit(1);
     testfile.writeBit(1);
-=======
-    testfile.writeBit(1);
-    testfile.writeBit(0);
->>>>>>> refs/remotes/origin/main
 
     testfile.close();
 }

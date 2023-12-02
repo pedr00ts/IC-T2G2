@@ -22,3 +22,13 @@ target_link_libraries(mainExtract ppm_extract ${OpenCV_LIBS})
 add_library(img_tools STATIC img_tools.cpp)
 add_executable (mainTools mainTools.cpp)
 target_link_libraries(mainTools img_tools ${OpenCV_LIBS})
+
+
+add_library(golomb STATIC golomb.cpp)
+
+add_library(bitstream STATIC bitstream.cpp)
+
+add_library(sndCodec STATIC sndCodec.cpp)
+
+add_executable(sndCodecMain sndCodecMain.cpp)
+target_link_libraries(sndCodecMain sndCodec golomb bitstream sndfile)
