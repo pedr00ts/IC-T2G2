@@ -157,29 +157,42 @@ void GolombStream::encodeNext(int n) {
     }
 
     // encode prefix
-    for (uint32_t i = 0; i < abs(n)/golomb.M(); i++)    // insert n/m 0's in vector
+    for (uint32_t i = 0; i < abs(n)/golomb.M(); i++) {    // insert n/m 0's in vector
         stream.writeBit(0);
+        cout << 0;  // DEBUG
+    }
     stream.writeBit(1);                        // insert terminator 1
+    cout << 1;      // DEBUG
 
     // encode suffix
     u_int32_t rem = abs(n) % golomb.M();            // remainder used in suffix
     if (golomb.M() == golomb.P() || rem < golomb.P()-1) {                      // cases: m is a power of 2 or no extended bitcount
-        for (uint32_t mask = 1<<(golomb.BitCount()-1); mask > 0; mask = mask>>1) 
+        for (uint32_t mask = 1<<(golomb.BitCount()-1); mask > 0; mask = mask>>1) {
             stream.writeBit((bool) (rem & mask)); 
+            cout << (bool) (rem & mask);      // DEBUG
+        }
     } else {                                        // rem higher than p
-        for (uint8_t i = 0; i < golomb.BitCount(); i++)      // insert bitcount 1's
+        for (uint8_t i = 0; i < golomb.BitCount(); i++) {      // insert bitcount 1's
             stream.writeBit(1);
+            cout << 1;      // DEBUG
+        }
         for (u_int32_t i = golomb.P()-1; i < rem; i++) {     // extended 1's
             stream.writeBit(1);
+            cout << 1;      // DEBUG
         }
         stream.writeBit(0);                         // value ends in 0
+        cout << 0;      // DEBUG
     }
     // encode sign (when necessary)
-    if (golomb.Mode() == 0) {                                // insert sign bit
-        if (n < 0)
+    if (!golomb.Mode()) {                                // insert sign bit
+        if (n < 0) {
             stream.writeBit(1);
-        else if (n > 0)
+            cout << 1;      // DEBUG
+        }
+        else if (n > 0) {
             stream.writeBit(0);
+            cout << 0;      // DEBUG
+        }
     }
 }
 

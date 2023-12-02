@@ -16,7 +16,7 @@ void usage(char *argv[]){
 }
 
 enum operation{
-    e = 'e', d = 'd'
+    e = 'e', d = 'd', c = 'c'
 };
 
 int main(int argc, char *argv[])
@@ -38,13 +38,21 @@ int main(int argc, char *argv[])
     
     
     switch(argv[1][1]) {
-        case 'e': {          
+        case e: {          
           SndfileHandle sndFile = {argv[2]};
           codec.encode(sndFile, argv[3]);
           break;
         }
-        case 'd': {
+        case d: {
           codec.decode(argv[2], argv[3]);
+          break;
+        }
+        case c: {
+          Golomb golomb(stoi(argv[5]), stoi(argv[4]));
+          GolombStream gstream(golomb, argv[3]);
+          int number(stoi(argv[2]));
+          cout << "\nEncoding number " << argv[2] << " to " << argv[3] << " with m=" << argv[5] << " and mode=" << argv[4] << '\n';
+          gstream.encodeNext(number);
           break;
         }
         default:
