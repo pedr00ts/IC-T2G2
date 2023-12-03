@@ -51,30 +51,34 @@ void sndCodec::decode(string encodePath, string decodePath) {
     // decode data
     vector<short> samples {};
     short res;
-    while (gstream.hasNext()){
-        res = gstream.decodeNext();
-        short frame;
-        switch(last_values.size()) {
-            case 0:
-                frame = res;
-                break;
-            case 1:
-                frame = res + last_values[0];
-                break;
-            case 2:
-                frame = res + 2*last_values[1] - last_values[0];
-                break;
-            default:
-                frame = res + 3*last_values[2] - 3*last_values[1] + last_values[0];
-                last_values.erase(last_values.begin());
-        }
-        last_values.push_back(frame);
-        cout << frame << '\n';                  // DEBUG
-        samples.push_back(frame);
-        if(samples.size() == FRAMES_BUFFER_SIZE) {
-            cout << "write buffer\n";           // DEBUG
-            sndFile.writef(samples.data(), samples.size());
-            samples.clear();
+    while (gstream.hasNext()) {
+        try {       
+            res = gstream.decodeNext();
+            short frame;
+            switch(last_values.size()) {
+                case 0:
+                    frame = res;
+                    break;
+                case 1:
+                    frame = res + last_values[0];
+                    break;
+                case 2:
+                    frame = res + 2*last_values[1] - last_values[0];
+                    break;
+                default:
+                    frame = res + 3*last_values[2] - 3*last_values[1] + last_values[0];
+                    last_values.erase(last_values.begin());
+            }
+            last_values.push_back(frame);
+            cout << frame << '\n';                  // DEBUG
+            samples.push_back(frame);
+            if(samples.size() == FRAMES_BUFFER_SIZE) {
+                cout << "write buffer\n";           // DEBUG
+                sndFile.writef(samples.data(), samples.size());
+                samples.clear();
+            }
+        } catch(invalid_argument error) {
+            cerr << error.what() << endl;
         }
     }
     sndFile.writef(samples.data(), samples.size());

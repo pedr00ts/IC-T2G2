@@ -1,29 +1,36 @@
 #include "bitstream.h"
 
 BitStream::BitStream(string path) {
-    file = fstream{path};
-    filesystem::path p{path};
-    if (filesystem::exists(p))
-        length = filesystem::file_size(p);
-    else
-        length = 0;
-    file.seekg(file.beg);
-    file.seekp(file.end);
-    bytesRead = 0;
+    file = fstream(path, ios::in | ios::app);   // read from the beginning and write to the end
     readPos = 0;
     writePos = 0;
+    bytesRead = 0;
+    // check file size (bytes)
+    filesystem::path p{path};
+    if (filesystem::exists(p))
+        size = filesystem::file_size(p);
+    else
+        size = 0;
+    cout << size << " bytes" << endl;
+}
+
+bool BitStream::readOk() {
+    return file.is_open() && file.good();
+}
+
+bool BitStream::writeOk() {
+    return file.is_open() && file.good();
 }
 
 bool BitStream::hasNext() {
-    //cout << bytesRead << '\n' << length << '\n';
-    return (bytesRead < length);
+    return (bytesRead < size);
 }
 
 bool BitStream::readBit() {
     if (readPos == 0){
         file.get(readByte);             
     }
-    //cout << (short)readByte << '\n';
+    
     bool bit = 0;
     switch(readPos) {
         case 0:
@@ -58,17 +65,7 @@ bool BitStream::readBit() {
 }
 
 void BitStream::writeBit(bool bit) {
-    //cout << "writeBit called\n";        // DEBUG
-    //cout << bit;
-
-    if (writePos == 0)
-        writeByte = 0x00;
-
-    if(bit) {               // Modify byte
-        writeByte = writeByte | (MASK::bit0 >> writePos);
-    } else { 
-        writeByte = writeByte & (0xFF7F >> writePos);
-    }
+    writeByte = (writeByte << 1) | bit;
 
     if (writePos == 7)
         file.put(writeByte);
@@ -136,7 +133,9 @@ void BitStream::writeString(string str) {
 }
 
 void BitStream::close() {
-    if (!writePos)
+    if (writePos) {
+        writeByte = writeByte << (8 - writePos);
         file.put(writeByte);
+    }
     file.close();
 }
