@@ -1,10 +1,14 @@
 #include "bitstream.h"
 
 BitStream::BitStream(string path) {
-    fstream file = fstream(path, std::ifstream::ate | std::ifstream::binary);
     filesystem::path p{path};
-    length = filesystem::file_size(p);
+    if (filesystem::exists(p))
+        length = filesystem::file_size(p);
+    else
+        length = 0;        
+    fstream file = fstream{path};
     file.seekg (0, file.beg);
+    file.seekp(0, file.end);
     bytesRead = 0;
     readPos = 0;
     writePos = 0;
@@ -55,29 +59,25 @@ bool BitStream::readBit() {
 }
 
 void BitStream::writeBit(bool bit) {
+    //cout << "writeBit called\n";        // DEBUG
+    streampos origPos = file.tellg();   // read position 
     char B = 0x00;          // Initialize byte
 
-    if (writePos != 0) {    // Pos not aligned -> read last byte
-        int rp = file.tellg();
+    if (writePos != 0){
         file.seekg(-1, file.end);
         B = file.peek();
-        file.seekg(rp);
     }
-    
     if(bit) {               // Modify byte
         B = B | (MASK::bit0 >> writePos);
     } else { 
         B = B & (0xFF7F >> writePos);
     }
 
-    if (writePos == 0) {
-        file.seekp(0, file.end);
-    } else {
-        file.seekp(-1, file.end);
-    }
     file.put(B);            // Write byte
 
-    writePos = (writePos + 1) % 8;           
+    writePos = (writePos + 1) % 8;
+    if(!writePos)
+        file.seekp(-1, file.cur);    
 }
 
 vector<bool> BitStream::readNBits(size_t N) {

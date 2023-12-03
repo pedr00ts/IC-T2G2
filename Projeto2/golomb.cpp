@@ -138,7 +138,7 @@ uint32_t Golomb::P() {
 // GolombStream
 GolombStream::GolombStream(Golomb golomb, string path) {
     GolombStream::golomb = golomb;
-    GolombStream::stream = BitStream(path);
+    GolombStream::stream = BitStream{path};
 }
 
 bool GolombStream::hasNext() {
