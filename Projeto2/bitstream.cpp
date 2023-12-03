@@ -1,76 +1,83 @@
 #include "bitstream.h"
 
 BitStream::BitStream(string path) {
-    file = fstream{path};
-    file.seekg(file.beg);   // read: first byte
+    filesystem::path p{path};
+    if (filesystem::exists(p))
+        length = filesystem::file_size(p);
+    else
+        length = 0;        
+    fstream file = fstream{path};
+    file.seekg (0, file.beg);
+    file.seekp(0, file.end);
+    bytesRead = 0;
     readPos = 0;
-    file.seekp(file.end);   // write: last byte
     writePos = 0;
 }
 
 bool BitStream::hasNext() {
-    return !file.eof();
+    //cout << bytesRead << '\n' << length << '\n';
+    return (bytesRead < length);
 }
 
 bool BitStream::readBit() {
-    char B = file.get();
+    streampos origPos = file.tellg();
+    char byte;
+    file.get(byte);
     bool bit = 0;
-    switch(readPos++) {
+    switch(readPos) {
         case 0:
-            bit = B & bit0;
+            bit = byte & bit0;
             break;
         case 1:
-            bit = B & bit1;
+            bit = byte & bit1;
             break;
         case 2:
-            bit = B & bit2;
+            bit = byte & bit2;
             break;
         case 3:
-            bit = B & bit3;
+            bit = byte & bit3;
             break;
         case 4:
-            bit = B & bit4;
+            bit = byte & bit4;
             break;
         case 5:
-            bit = B & bit5;
+            bit = byte & bit5;
             break;
         case 6:
-            bit = B & bit6;
+            bit = byte & bit6;
             break;
         case 7:
-            bit = B & bit7;
+            bit = byte & bit7;
             break;
-    }        
-        file.seekg(file.cur-1);
-        readPos = 0;
-
+    }
+    readPos = (readPos+1) % 8;
+    if (readPos)
+        file.seekg(origPos);
+    else
+        bytesRead++;
     return bit;
 }
 
 void BitStream::writeBit(bool bit) {
+    //cout << "writeBit called\n";        // DEBUG
+    streampos origPos = file.tellg();   // read position 
     char B = 0x00;          // Initialize byte
 
-    if (writePos != 0) {    // Pos not aligned -> read last byte
-        int rp = file.tellg();
+    if (writePos != 0){
         file.seekg(-1, file.end);
         B = file.peek();
-        file.seekg(rp);
     }
-    
     if(bit) {               // Modify byte
         B = B | (MASK::bit0 >> writePos);
     } else { 
         B = B & (0xFF7F >> writePos);
     }
 
-    if (writePos == 0) {
-        file.seekp(0, file.end);
-    } else {
-        file.seekp(-1, file.end);
-    }
     file.put(B);            // Write byte
 
-    writePos = (writePos + 1) % 8;           
+    writePos = (writePos + 1) % 8;
+    if(!writePos)
+        file.seekp(-1, file.cur);    
 }
 
 vector<bool> BitStream::readNBits(size_t N) {
@@ -85,6 +92,7 @@ vector<bool> BitStream::readNBits(size_t N) {
         for (int i = 7; i >= 0; i++)
             bits.push_back(c & (0b1 << i));
         N -= 8;
+        bytesRead++;
     }
 
     for(size_t i = 0; i < N; i++) 
@@ -116,6 +124,7 @@ string BitStream::readString() {
     vector<char> ch{};
     char next;
 
+// Change to hasNext and update bytesRead 
     do {
         next = file.peek();
         if ((next != file.eof()) && (next != '\0'))
