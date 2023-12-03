@@ -32,3 +32,7 @@ add_library(sndCodec STATIC sndCodec.cpp)
 
 add_executable(sndCodecMain sndCodecMain.cpp)
 target_link_libraries(sndCodecMain sndCodec golomb bitstream sndfile)
+
+#DEBUG
+add_executable(testbitstream testbitstream.cpp) 
+target_link_libraries(testbitstream bitstream)      

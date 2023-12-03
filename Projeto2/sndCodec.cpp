@@ -69,7 +69,7 @@ void sndCodec::decode(string encodePath, string decodePath) {
         cout << frame << '\n';                  // DEBUG
         samples.push_back(frame);
         if(samples.size() == FRAMES_BUFFER_SIZE) {
-            cout << "write buffer\n";
+            cout << "write buffer\n";           // DEBUG
             sndFile.writef(samples.data(), samples.size());
             samples.clear();
         }

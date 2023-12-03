@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
+#include <filesystem>
 
 using namespace std;
 
@@ -13,6 +14,8 @@ using namespace std;
             fstream file;
             size_t readPos;
             size_t writePos;
+            uintmax_t length;
+            uintmax_t bytesRead;
 
             enum MASK {
                     bit0 = 0b10000000,
