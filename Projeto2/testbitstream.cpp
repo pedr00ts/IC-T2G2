@@ -8,5 +8,6 @@ int main(int argc, char* argv[]) {
     BitStream bs {argv[1]};
     while(bs.hasNext())
         cout << bs.readBit();
+    bs.close();
     return 0;
 }

@@ -1,14 +1,14 @@
 #include "bitstream.h"
 
 BitStream::BitStream(string path) {
+    file = fstream{path};
     filesystem::path p{path};
     if (filesystem::exists(p))
         length = filesystem::file_size(p);
     else
-        length = 0;        
-    fstream file = fstream{path};
-    file.seekg (0, file.beg);
-    file.seekp(0, file.end);
+        length = 0;
+    file.seekg(file.beg);
+    file.seekp(file.end);
     bytesRead = 0;
     readPos = 0;
     writePos = 0;
@@ -20,64 +20,59 @@ bool BitStream::hasNext() {
 }
 
 bool BitStream::readBit() {
-    streampos origPos = file.tellg();
-    char byte;
-    file.get(byte);
+    if (readPos == 0){
+        file.get(readByte);             
+    }
+    //cout << (short)readByte << '\n';
     bool bit = 0;
     switch(readPos) {
         case 0:
-            bit = byte & bit0;
+            bit = readByte & bit0;
             break;
         case 1:
-            bit = byte & bit1;
+            bit = readByte & bit1;
             break;
         case 2:
-            bit = byte & bit2;
+            bit = readByte & bit2;
             break;
         case 3:
-            bit = byte & bit3;
+            bit = readByte & bit3;
             break;
         case 4:
-            bit = byte & bit4;
+            bit = readByte & bit4;
             break;
         case 5:
-            bit = byte & bit5;
+            bit = readByte & bit5;
             break;
         case 6:
-            bit = byte & bit6;
+            bit = readByte & bit6;
             break;
         case 7:
-            bit = byte & bit7;
+            bit = readByte & bit7;
             break;
     }
     readPos = (readPos+1) % 8;
-    if (readPos)
-        file.seekg(origPos);
-    else
+    if (!readPos)
         bytesRead++;
     return bit;
 }
 
 void BitStream::writeBit(bool bit) {
     //cout << "writeBit called\n";        // DEBUG
-    streampos origPos = file.tellg();   // read position 
-    char B = 0x00;          // Initialize byte
+    //cout << bit;
 
-    if (writePos != 0){
-        file.seekg(-1, file.end);
-        B = file.peek();
-    }
+    if (writePos == 0)
+        writeByte = 0x00;
+
     if(bit) {               // Modify byte
-        B = B | (MASK::bit0 >> writePos);
+        writeByte = writeByte | (MASK::bit0 >> writePos);
     } else { 
-        B = B & (0xFF7F >> writePos);
+        writeByte = writeByte & (0xFF7F >> writePos);
     }
 
-    file.put(B);            // Write byte
-
-    writePos = (writePos + 1) % 8;
-    if(!writePos)
-        file.seekp(-1, file.cur);    
+    if (writePos == 7)
+        file.put(writeByte);
+    writePos = (writePos + 1) % 8;  
 }
 
 vector<bool> BitStream::readNBits(size_t N) {
@@ -141,5 +136,7 @@ void BitStream::writeString(string str) {
 }
 
 void BitStream::close() {
+    if (!writePos)
+        file.put(writeByte);
     file.close();
 }
