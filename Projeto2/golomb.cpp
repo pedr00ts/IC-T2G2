@@ -234,19 +234,3 @@ int GolombStream::decodeNext() {
 
     return value;
 }
-
-
-/*
-int main(int argc, char* argv[]) {
-    if (argc != 4) {
-        return 1;
-    }
-
-    Golomb G = Golomb{(uint32_t)stoi(argv[1]), (bool)stoi(argv[2])};       // mod, type
-    vector<bool> code = G.encode(stoi(argv[3]));
-    for (bool b : code) {
-        cout << b;
-    }
-    cout << '\n' << G.decode(code) << '\n';
-}
-*/

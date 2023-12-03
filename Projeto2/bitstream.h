@@ -11,6 +11,8 @@ using namespace std;
 #define BITSTREAM
     class BitStream {
         private:
+            char readByte;
+            char writeByte;
             fstream file;
             size_t readPos;
             size_t writePos;
@@ -30,7 +32,7 @@ using namespace std;
 
         public:
             BitStream() = default;
-            BitStream(string path);         // constructor
+            BitStream(string path);         // constructor, 0 -> read, 1 -> write
             bool hasNext();
             bool readBit();
             void writeBit(bool bit);
