@@ -11,75 +11,83 @@ sndCodec::sndCodec(bool mode) {
 
 }
 
+// Predictive Golomb Encoder
 void sndCodec::encode(SndfileHandle& sndFile, string encodedPath) {
-    GolombStream gstream(golomb, encodedPath);
-    uint32_t nFrames;
-    vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());
-    while(nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE)) {
-        cout << nFrames << " frames read\n";
-        samples.resize(nFrames * sndFile.channels());
-        for (short frame : samples) {
-            //cout << frame << '\n';        DEBUG
-            switch(last_values.size()) {
-                case 0:
-                    gstream.encodeNext(frame);
-                    break;
-                case 1:
-                    gstream.encodeNext(frame-last_values[0]);
-                    break;
-                case 2:
-                    gstream.encodeNext(frame - 2*last_values[1] + last_values[0]);
-                    break;
-                default:
-                    gstream.encodeNext(frame - 3*last_values[2] + 3*last_values[1] - last_values[0]);
-                    last_values.erase(last_values.begin());
-            }
-            last_values.push_back(frame);                
-        }
-    }
-    gstream.close();
-}
+    BitStream stream(encodedPath);                 // create code stream
 
-void sndCodec::decode(string encodePath, string decodePath) {
-    GolombStream gstream(golomb, encodePath);
-    
-    // decode header
-    int samplerate = 44100;
-    int channels = 2;
-    // create SndFileHandle
-    SndfileHandle sndFile {decodePath, SFM_WRITE, 65538, channels, samplerate};
-    // decode data
-    vector<short> samples(FRAMES_BUFFER_SIZE);
-    short res, frame;
-    while (gstream.hasNext()) {
-        try {       
-            res = gstream.decodeNext();
-            switch(last_values.size()) {
+    // encode header
+    golomb.encodeNext(stream, sndFile.format());
+    golomb.encodeNext(stream, sndFile.channels());
+    golomb.encodeNext(stream, sndFile.samplerate());
+
+    // encode data
+    uint32_t nFrames;
+    vector<short> samples(FRAMES_BUFFER_SIZE * sndFile.channels());         // frames buffer
+    int res;                                                                // residual to encode
+    while(nFrames = sndFile.readf(samples.data(), FRAMES_BUFFER_SIZE)) {    // read all frames (in blocks of frames buffer size)
+        cout << nFrames << " frames read" << endl;      // DEBUG
+        samples.resize(nFrames * sndFile.channels());
+        for (short frame : samples) {                   // for frames from the buffer
+            //cout << frame << '\n';                    // DEBUG
+            switch(last_values.size()) {                // obtain frame residual
                 case 0:
-                    frame = res;
+                    res = frame;
                     break;
                 case 1:
-                    frame = res + last_values[0];
+                    res = frame - last_values[0];
                     break;
                 case 2:
-                    frame = res + 2*last_values[1] - last_values[0];
+                    res = frame - 2*last_values[1] + last_values[0];
                     break;
                 default:
-                    frame = res + 3*last_values[2] - 3*last_values[1] + last_values[0];
+                    res =  frame - 3*last_values[2] + 3*last_values[1] - last_values[0];
                     last_values.erase(last_values.begin());
             }
             last_values.push_back(frame);
-            //cout << frame << '\n';                  // DEBUG
-            samples.push_back(frame);
-            if(samples.size() == FRAMES_BUFFER_SIZE * sndFile.channels()) {
-                cout << "write buffer\n";           // DEBUG
-                sndFile.writef(samples.data(), FRAMES_BUFFER_SIZE);
-                samples.clear();
-            }
-        } catch(invalid_argument error) {
-            cerr << error.what() << endl;
+            golomb.encodeNext(stream, res);                // encode frame residual           
         }
     }
-    sndFile.writef(samples.data(), samples.size()/sndFile.channels());
+    stream.close();                                        // close code stream
 }
 
+// Predictive Golomb Decoder
+void sndCodec::decode(string encodedPath, string decodedPath) {
+    BitStream stream(encodedPath);                      // create code stream
+    
+    // decode header
+    int header[3];          // format, channels, samplerate
+    for(int param=0; param < 3 && golomb.decodeNext(stream, header[param]); param++);
+    // create sndFile from header
+    cout << "Creating sdnFile with format=" << header[0] << ", channels=" << header[1] << ", samplerate=" << header[2] << endl;  // DEBUG
+    SndfileHandle sndFile {decodedPath, SFM_WRITE, header[0], header[1], header[2]};
+    // decode data
+    vector<short> samples;             // decoded frames buffer
+    short frame;                       // decoded frame
+    int res;                           // decoded residual
+    while (golomb.decodeNext(stream, res)) {    // decode all residuals from the code stream     
+        switch(last_values.size()) {            // obtain frame from decoded residual
+            case 0:
+                frame = (short)res;
+                break;
+            case 1:
+                frame = (short)res + last_values[0];
+                break;
+            case 2:
+                frame = (short)res + 2*last_values[1] - last_values[0];
+                break;
+            default:
+                frame = (short)res + 3*last_values[2] - 3*last_values[1] + last_values[0];
+                last_values.erase(last_values.begin());
+        }
+        last_values.push_back(frame);
+        samples.push_back(frame);                // update frames buffer
+        //cout << frame << '\n';                 // DEBUG
+        if(samples.size() == FRAMES_BUFFER_SIZE * sndFile.channels()) {
+            cout << "Writing frames buffer" << endl;                    // DEBUG
+            sndFile.writef(samples.data(), FRAMES_BUFFER_SIZE);         // write frames buffer
+            samples.resize(0);                                          // reset frames buffer
+        }
+    }
+    sndFile.writef(samples.data(), samples.size()/sndFile.channels());      // write rem frames in frames buffer
+    stream.close();                                                         // close code stream
+}

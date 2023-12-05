@@ -21,6 +21,8 @@ class Golomb {
         Golomb(uint32_t mod=4, bool b=0);
         vector<bool> encode(int n);
         int decode(vector<bool> encodedN);
+        void encodeNext(BitStream& stream, int n);
+        bool decodeNext(BitStream& stream, int& n);
         uint32_t M();
         bool Mode();
         uint8_t BitCount();
