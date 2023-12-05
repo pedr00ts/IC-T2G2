@@ -44,5 +44,6 @@ using namespace std;
             void writeString(string str);
             void close();
             void writeAByte(char byte);
+            char readAByte();
     };
 #endif
