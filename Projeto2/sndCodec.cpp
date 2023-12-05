@@ -47,14 +47,13 @@ void sndCodec::decode(string encodePath, string decodePath) {
     int samplerate = 44100;
     int channels = 2;
     // create SndFileHandle
-    SndfileHandle sndFile {decodePath, SFM_WRITE, 0, channels, samplerate};
+    SndfileHandle sndFile {decodePath, SFM_WRITE, 65538, channels, samplerate};
     // decode data
-    vector<short> samples {};
-    short res;
+    vector<short> samples(FRAMES_BUFFER_SIZE);
+    short res, frame;
     while (gstream.hasNext()) {
         try {       
             res = gstream.decodeNext();
-            short frame;
             switch(last_values.size()) {
                 case 0:
                     frame = res;
@@ -70,17 +69,17 @@ void sndCodec::decode(string encodePath, string decodePath) {
                     last_values.erase(last_values.begin());
             }
             last_values.push_back(frame);
-            cout << frame << '\n';                  // DEBUG
+            //cout << frame << '\n';                  // DEBUG
             samples.push_back(frame);
-            if(samples.size() == FRAMES_BUFFER_SIZE) {
+            if(samples.size() == FRAMES_BUFFER_SIZE * sndFile.channels()) {
                 cout << "write buffer\n";           // DEBUG
-                sndFile.writef(samples.data(), samples.size());
+                sndFile.writef(samples.data(), FRAMES_BUFFER_SIZE);
                 samples.clear();
             }
         } catch(invalid_argument error) {
             cerr << error.what() << endl;
         }
     }
-    sndFile.writef(samples.data(), samples.size());
+    sndFile.writef(samples.data(), samples.size()/sndFile.channels());
 }
 
