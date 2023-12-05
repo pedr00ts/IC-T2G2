@@ -1,18 +1,25 @@
-#include <opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include "golomb.h"
 #include "bitstream.h"
 
 using namespace std;
+using namespace cv;
 
 // Classe imgCodec -> codificação para imagens grayscale em modo JPEG
 #ifndef IMGCODEC
 #define IMGCODEC
 class imgCodec {
-    private:
+    protected:
         Golomb golomb;
+        uchar pred_mode;    // default prediction mode
+        uint_fast8_t predicted_value(uint_fast8_t a, uint_fast8_t b, uint_fast8_t c, uchar mode);
+    
 
     public:
-        imgCodec(uint32_t m, bool mode, uchar pred_mode);
-        imgCodec = default();
-};
+        imgCodec(uint32_t m, bool mode, uchar pred_mode);     // constructor
+        imgCodec() = default;
+        ~imgCodec() = default;
+        void encode(string img_path, string code_path);       // encodes image at img_path into the file at code_path 
+        void decode(string code_path, string img_path);       // decodes file at code_path into the file at img_path 
+};  
 #endif

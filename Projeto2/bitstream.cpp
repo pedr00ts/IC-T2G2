@@ -139,3 +139,7 @@ void BitStream::close() {
     }
     file.close();
 }
+
+void BitStream::writeAByte(char byte) {
+    file.put(byte);
+}

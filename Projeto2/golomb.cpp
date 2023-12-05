@@ -234,3 +234,7 @@ int GolombStream::decodeNext() {
 
     return value;
 }
+
+BitStream& GolombStream::getStream() {
+    return stream;
+}
