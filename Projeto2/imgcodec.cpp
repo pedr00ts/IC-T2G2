@@ -17,11 +17,20 @@ uint_fast8_t imgCodec::predicted_value(uint_fast8_t a, uint_fast8_t b, uint_fast
         case 3:
             return c;
         case 4:
-            return a+b-c;
+            if (c > (a+b))
+                return (a+b-c);
+            else
+                return 0;
         case 5:
-            return a+(b-c)/2;
+            if (((b-c)/2) > a)
+                return (a+(b-c)/2);
+            else
+                return 0;
         case 6:
-            return b+(a-c)/2;
+            if (((a-c)/2) > b)
+                return (b+(a-c)/2);
+            else
+                return 0;
         case 7:
             return (a+b)/2;
         default:
@@ -55,7 +64,7 @@ void imgCodec::encode(string img_path, string code_path) {
                 else
                     mode = 1;
             }
-            value = img_in.at<uint_fast8_t>(col, row);                       // get value at (row, col)
+            value = img_in.at<uint_fast8_t>(col, row);                            // get value at (row, col)
             gstream.encodeNext(abs(value - predicted_value(a, b, c, mode)));      // encode residual: value - pred_value
 
         }
