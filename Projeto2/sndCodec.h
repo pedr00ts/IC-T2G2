@@ -19,6 +19,6 @@ public:
     ~sndCodec() = default;
 
     void encode(SndfileHandle& sndFile, string encodedPath);
-    void decode(string encodedPath, string decodedPath);
+    void decode(BitStream& encodedPath, string decodedPath);
 };
 #endif
