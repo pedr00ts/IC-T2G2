@@ -11,7 +11,7 @@ BitStream::BitStream(string path) {
         size = filesystem::file_size(p);
     else
         size = 0;
-    cout << size << " bytes" << endl;
+    // cout << size << " bytes" << endl;    // DEBUG
 }
 
 bool BitStream::readOk() {
