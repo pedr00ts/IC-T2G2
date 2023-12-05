@@ -10,7 +10,7 @@ using namespace std;
 #ifndef BITSTREAM
 #define BITSTREAM
     class BitStream {
-        private:
+        protected:
             fstream file;
             char readByte;
             char writeByte;
@@ -43,5 +43,7 @@ using namespace std;
             string readString();
             void writeString(string str);
             void close();
+            void writeAByte(char byte);
+            char readAByte();
     };
 #endif

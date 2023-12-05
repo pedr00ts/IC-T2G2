@@ -9,7 +9,7 @@ using namespace std;
 #ifndef GOLOMB
 #define GOLOMB
 class Golomb {
-    private:
+    protected:
         uint32_t m;                                    // encoding modulus
         bool mode;                                     // (0) -> magnitude + sign; (1) -> pos/neg interleaving
         uint8_t bitcount;                              // number of bits in suffix
@@ -33,7 +33,7 @@ class Golomb {
 #ifndef GOLOMBSTREAM
 #define GOLOMBSTREAM
 class GolombStream {
-    private:
+    protected:
         Golomb golomb;                                 // golomb code parameters
         BitStream stream;                              // golomb code stream
 
@@ -43,5 +43,6 @@ class GolombStream {
         void close();
         int decodeNext();
         void encodeNext(int n);
+        BitStream& getStream();
 };
 #endif
