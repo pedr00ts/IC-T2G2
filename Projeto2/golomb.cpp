@@ -274,6 +274,30 @@ void GolombStream::encodeNext(int n) {
     }
 }
 
+void GolombStream::encodeNext(uint_fast8_t n) {
+    // encode prefix
+    for (uint32_t i = 0; i < n/golomb.M(); i++) {    // insert n/m 0's in vector
+        stream.writeBit(0);
+    }
+    stream.writeBit(1);                        // insert terminator 1
+
+    // encode suffix
+    u_int32_t rem = n % golomb.M();            // remainder used in suffix
+    if (golomb.M() == golomb.P() || rem < golomb.P()-1) {                      // cases: m is a power of 2 or no extended bitcount
+        for (uint32_t mask = 1<<(golomb.BitCount()-1); mask > 0; mask = mask>>1) {
+            stream.writeBit((bool) (rem & mask)); 
+        }
+    } else {                                        // rem higher than p
+        for (uint8_t i = 0; i < golomb.BitCount(); i++) {      // insert bitcount 1's
+            stream.writeBit(1);
+        }
+        for (u_int32_t i = golomb.P()-1; i < rem; i++) {     // extended 1's
+            stream.writeBit(1);
+        }
+        stream.writeBit(0);                         // value ends in 0
+    }
+}
+
 int GolombStream::decodeNext() {
     uint32_t q {};                                                       // quotient
     uint32_t r {};                                                       // remainder
@@ -318,6 +342,37 @@ int GolombStream::decodeNext() {
         value /= 2;
     }
 
+    return value;
+}
+
+uint_fast8_t GolombStream::decodeNextPos() {
+    uint32_t q {};                                                       // quotient
+    uint32_t r {};                                                       // remainder
+    
+    // decode prefix
+    bool complete = true;
+    while ((complete = stream.hasNext()) && stream.readBit() != 1) {
+        q++;
+    }
+    // decode suffix
+    for (int c = 0; (complete = stream.hasNext()) && c < golomb.BitCount(); c++) {
+        r = r << 1;
+        r = r | stream.readBit();
+    } 
+    // decode extended suffix bits (when expected)
+    if (golomb.M() != golomb.P() && r == golomb.P()-1) {
+        while ((complete = stream.hasNext()) && stream.readBit() != 0 && r < golomb.M()) {
+            r++;  
+        }
+    }
+    // verify incomplete code error
+    if (!complete)
+        throw invalid_argument("Incomplete code\n");
+    // verify suffix overflow error
+    if (r >= golomb.M())
+        throw invalid_argument("Value is not coded correctly - suffix is too large\n");
+
+    uint_fast8_t value = q*golomb.M() + r;
     return value;
 }
 

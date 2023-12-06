@@ -42,7 +42,9 @@ class GolombStream {
         bool hasNext();
         void close();
         int decodeNext();
+        uint_fast8_t decodeNextPos();                  // optimized when input >= 0
         void encodeNext(int n);
+        void encodeNext(uint_fast8_t n);               // optimized when input >= 0
         BitStream& getStream();
 };
 #endif
