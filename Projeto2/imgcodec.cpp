@@ -1,14 +1,14 @@
 #include "imgcodec.h"
 #include <opencv2/opencv.hpp>
 
-imgCodec::imgCodec(uint32_t m, bool mode, uchar pred_mode) {            // usar modo unsigned
-    golomb = Golomb(m, mode);
+imgCodec::imgCodec(uint32_t m, uchar pred_mode) {            // usar modo unsigned
+    golomb = Golomb(m, 0);
     imgCodec::pred_mode = pred_mode;
 }
 
 uint_fast8_t imgCodec::predicted_value(uint_fast8_t a, uint_fast8_t b, uint_fast8_t c, uchar mode) {
     switch(mode) {
-        case 0:                 // mode 0 -> predicted value is always 0
+        case 0:                             // mode 0 -> predicted value is always 0
             return 0;         
         case 1:
             return a;
@@ -53,8 +53,8 @@ void imgCodec::encode(string img_path, string code_path) {
     // ENCRYPT IMAGE
     uint_fast8_t a = 0, b = 0, c = 0, value;
     uchar mode;
-    for (size_t col = 0; col < img_in.cols; col++) {
-        for (size_t row = 0; row < img_in.rows; row++) {
+    for (int col = 0; col < img_in.cols; col++) {
+        for (int row = 0; row < img_in.rows; row++) {
             if (col == 0) {
                 if (row == 0)   
                     mode = 0;
@@ -72,8 +72,8 @@ void imgCodec::encode(string img_path, string code_path) {
                     c = img_in.at<uint_fast8_t>(col-1, row-1);
                 }
             }
-            value = img_in.at<uint_fast8_t>(col, row);                            // get value at (row, col)
-            gstream.encodeNext(abs(value - predicted_value(a, b, c, mode)));      // encode residual: value - pred_value
+            value = img_in.at<uint_fast8_t>(col, row);                                          // get value at (row, col)
+            gstream.encodeNext((uint_fast8_t)abs(value - predicted_value(a, b, c, mode)));      // encode residual: value - pred_value
         }
     }
 }
@@ -82,7 +82,7 @@ void imgCodec::decode(string code_path, string img_path) {
     GolombStream gstream {golomb, code_path};
 
     // READ HEADER
-    char* header;
+    char* header = new char(9);
     for (int i = 0; i < 9; i++) {
         header[i] = gstream.getStream().readAByte();
     }
@@ -101,10 +101,10 @@ void imgCodec::decode(string code_path, string img_path) {
 
     // DECRYPT IMAGE
     Mat img_out = Mat::zeros(nCols, nRows, img_type);
-    uint_fast8_t a = 0, b = 0, c = 0, residual, pred_value;
+    uint_fast8_t a = 0, b = 0, c = 0, pred_value;
     uchar mode;
-    for (size_t col = 0; col < img_out.cols; col++) {
-        for (size_t row = 0; row < img_out.rows; row++) {
+    for (int col = 0; col < img_out.cols; col++) {
+        for (int row = 0; row < img_out.rows; row++) {
             if (col == 0) {
                 if (row == 0)   
                     mode = 0;
@@ -121,10 +121,10 @@ void imgCodec::decode(string code_path, string img_path) {
                     c = img_out.at<uint_fast8_t>(col-1, row-1);
                 }
             }
-            pred_value = predicted_value(a, b, c, mode);   // get predicted value
-            img_out.at<uint_fast8_t>(col, row) = gstream.decodeNext() + pred_value;     // decode value: residual + pred_value
+            pred_value = predicted_value(a, b, c, mode);                                 // get predicted value
+            img_out.at<uint_fast8_t>(col, row) = gstream.decodeNextPos() + pred_value;   // decode value: residual + pred_value
         }
     }
-    
+    imwrite(img_path, img_out);    
     gstream.close();
 }

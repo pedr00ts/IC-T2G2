@@ -38,6 +38,11 @@ target_link_libraries(golombMain golomb bitstream)
 add_executable(sndCodecMain sndCodecMain.cpp)
 target_link_libraries(sndCodecMain sndCodec golomb bitstream sndfile)
 
+add_library(imgcodec STATIC imgcodec.cpp)
+
+add_executable(imgcodecmain imgcodecmain.cpp)
+target_link_libraries(imgcodecmain imgcodec golomb bitstream ${OpenCV_LIBS})
+
 # add DEBUG executables
 add_executable(testbitstream testbitstream.cpp) 
 target_link_libraries(testbitstream bitstream)

@@ -1,6 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include "golomb.h"
 #include "bitstream.h"
+#define MAX_USHORT_SIZE 65536
 
 using namespace std;
 using namespace cv;
@@ -16,7 +17,7 @@ class imgCodec {
     
 
     public:
-        imgCodec(uint32_t m, bool mode, uchar pred_mode);     // constructor
+        imgCodec(uint32_t m, uchar pred_mode);     // constructor
         imgCodec() = default;
         ~imgCodec() = default;
         void encode(string img_path, string code_path);       // encodes image at img_path into the file at code_path 
