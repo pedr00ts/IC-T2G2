@@ -11,6 +11,10 @@ class sndCodec
 private:
     Golomb golomb;
     vector<short> last_values;
+    bool dynamic;
+    float alfa(int n);
+    uint32_t bestM(int n);
+    short average(vector<short> const& values);
 
 public:
     sndCodec(uint32_t m, bool mode);

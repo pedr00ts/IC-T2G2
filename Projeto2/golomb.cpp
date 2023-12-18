@@ -220,6 +220,17 @@ uint32_t Golomb::P() {
     return p;
 }
 
+void Golomb::setM(uint32_t m) {
+    // set m
+    Golomb::m = m;
+    // update m related attributes
+    bitcount = floor(log2(m));
+    p = pow(2, bitcount);
+}
+
+void Golomb::setMode(bool mode) {
+    Golomb::mode = mode;
+}
 
 // GolombStream
 GolombStream::GolombStream(Golomb golomb, string path) {

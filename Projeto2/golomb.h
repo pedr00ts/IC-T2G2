@@ -27,6 +27,8 @@ class Golomb {
         bool Mode();
         uint8_t BitCount();
         uint32_t P();
+        void setM(uint32_t m);
+        void setMode(bool mode);
 };
 #endif
 

@@ -1,22 +1,65 @@
 #include "sndCodec.h"
 
+// Fixed module codec constructor
 sndCodec::sndCodec(uint32_t m, bool mode) {
     sndCodec::golomb = {m, mode};
     sndCodec::last_values = {};
+    sndCodec::dynamic = false;
 }
 
+// Variable module codec constructor
 sndCodec::sndCodec(bool mode) {
-    sndCodec::golomb = {mode};
+    sndCodec::golomb = {4, mode};
     sndCodec::last_values = {};
+    sndCodec::dynamic = true;
 }
+
+// Returns alfa for a distribution of type: alfa^i * (1-alfa)
+float sndCodec::alfa(int n) {
+    cout << "Finding the alfa for " << n << endl;
+    float res = 0;
+    int an = abs(n); 
+    if (an > 0)
+        res = (float)an/(float)(an + 1);
+    cout << "alfa=" << res << endl;
+    return res;
+}
+
+// Returns the best m to encode a given integer n
+uint32_t sndCodec::bestM(int n) {
+    cout << "Finding the best m for " << n << endl;
+    uint32_t res = 1;
+    float a = alfa(n);
+    if (a > 0)
+        res = ceil(-1/log2(a));
+    cout << "m=" << res << endl;
+    return res;
+}
+
+short sndCodec::average(vector<short> const& values) {
+    cout << "Calculating the average" << endl;
+    if (values.empty())
+        return 0;
+    int sum = 0;
+    for (auto v: values)
+        sum += v;
+    return (short) (sum / values.size());
+}
+
 
 // Predictive Golomb Encoder
 void sndCodec::encode(SndfileHandle& sndFile, string encodedPath) {
     BitStream stream(encodedPath);                 // create code stream
 
     // encode header
+    if (dynamic)
+        golomb.setM(bestM(sndFile.format()));
     golomb.encodeNext(stream, sndFile.format());
+    if (dynamic)
+        golomb.setM(bestM(sndFile.channels()));
     golomb.encodeNext(stream, sndFile.channels());
+    if (dynamic)
+        golomb.setM(bestM(sndFile.samplerate()));
     golomb.encodeNext(stream, sndFile.samplerate());
     cout << "Encoding snd file with format=" << sndFile.format() << ", channels=" << sndFile.channels() << ", samplerate=" << sndFile.samplerate() << endl;  // DEBUG
     // encode data
@@ -43,6 +86,8 @@ void sndCodec::encode(SndfileHandle& sndFile, string encodedPath) {
                     last_values.erase(last_values.begin());
             }
             last_values.push_back(frame);
+            if (dynamic)
+                golomb.setM(bestM(res));
             golomb.encodeNext(stream, res);                // encode frame residual           
         }
     }
