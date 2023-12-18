@@ -13,7 +13,7 @@ class imgCodec {
     protected:
         Golomb golomb;
         uchar pred_mode;    // default prediction mode
-        uint_fast8_t predicted_value(uint_fast8_t a, uint_fast8_t b, uint_fast8_t c, uchar mode);
+        uint predicted_value(uint a, uint b, uint c, uchar mode);
     
 
     public:

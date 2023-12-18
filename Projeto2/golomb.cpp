@@ -274,7 +274,7 @@ void GolombStream::encodeNext(int n) {
     }
 }
 
-void GolombStream::encodeNext(uint_fast8_t n) {
+void GolombStream::encodeNext(uint n) {
     // encode prefix
     for (uint32_t i = 0; i < n/golomb.M(); i++) {    // insert n/m 0's in vector
         stream.writeBit(0);
@@ -345,7 +345,7 @@ int GolombStream::decodeNext() {
     return value;
 }
 
-uint_fast8_t GolombStream::decodeNextPos() {
+uint GolombStream::decodeNextPos() {
     uint32_t q {};                                                       // quotient
     uint32_t r {};                                                       // remainder
     
@@ -372,7 +372,7 @@ uint_fast8_t GolombStream::decodeNextPos() {
     if (r >= golomb.M())
         throw invalid_argument("Value is not coded correctly - suffix is too large\n");
 
-    uint_fast8_t value = q*golomb.M() + r;
+    uint value = q*golomb.M() + r;
     return value;
 }
 
