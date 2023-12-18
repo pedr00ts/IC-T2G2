@@ -158,15 +158,17 @@ bool Golomb::decodeNext(BitStream& stream, int& n) {
         q++;
     }
     // decode suffix
-    for (int c = 0; (complete = stream.hasNext()) && c < bitcount; c++) {
+    if (m != p && r >= (p-m)) {
         r = r << 1;
         r = r | stream.readBit();
-    } 
+        r = r - p + m;
+    }
     // decode extended suffix bits (when expected)
     if (m != p && r >= p-m) {
-        while ((complete = stream.hasNext()) && stream.readBit() != 0 && r < m) {
-            r++;  
-        }
+        r = r << 1;
+        if (complete = stream.hasNext())
+            r = r | stream.readBit();
+        r = r - p + m;
     }
     // verify incomplete code
     if (!complete)
